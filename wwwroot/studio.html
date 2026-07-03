@@ -1,0 +1,191 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AI 创作 - EaseGPT</title>
+    <link rel="stylesheet" href="/dashboard.css?v=10">
+    <link rel="stylesheet" href="/studio.css?v=33">
+</head>
+<body>
+    <div class="admin-shell studio-shell">
+        <aside class="admin-sidebar" aria-label="AI 创作导航">
+            <div class="brand-header">
+                <a class="admin-brand" href="/"><img class="brand-logo" src="/assets/easegpt.svg" alt=""><span class="brand-copy"><strong>EaseGPT 创作</strong><span>企业级 AI 应用平台</span></span></a>
+                <button id="collapseButton" class="sidebar-collapse" type="button" aria-label="收起侧边栏" title="收起侧边栏"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16m7-11-3 3 3 3"/></svg></button>
+            </div>
+            <nav class="admin-nav studio-resource-nav" aria-label="设计资源">
+                <button class="admin-nav-item active" data-resource="agent" type="button"><img class="nav-icon" src="/assets/agentchat.svg" alt="">对话Agent</button>
+                <button class="admin-nav-item" data-resource="workflow" type="button"><img class="nav-icon" src="/assets/connection.svg" alt="">工作流</button>
+                <button class="admin-nav-item" data-resource="knowledge" type="button"><img class="nav-icon" src="/assets/knowledge.svg" alt="">知识库</button>
+                <button class="admin-nav-item" data-resource="model-config" type="button"><img class="nav-icon" src="/assets/config.svg" alt="">AI模型配置</button>
+            </nav>
+            <div class="admin-sidebar-footer"><a href="/" class="sidebar-user"><span class="user-avatar"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/></svg></span><span class="user-label">用户</span></a></div>
+        </aside>
+        <main class="admin-main">
+            <a class="settings-button" href="/" aria-label="返回主界面" title="返回主界面"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14.5 5-7 7 7 7"/><path d="M8 12h12"/></svg></a>
+            <section class="view studio-view">
+                <div class="view-heading">
+                    <div><h1 id="resourceTitle">对话Agent</h1></div>
+                    <div class="studio-heading-actions">
+                        <button id="createResourceButton" class="studio-create-button" type="button" aria-label="新建对话 Agent" title="新建对话 Agent">新建对话 Agent</button>
+                        <label class="workflow-search" for="resourceSearchInput"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m16.5 16.5 4 4"/></svg><input id="resourceSearchInput" type="search" placeholder="搜索 Agent 名称" autocomplete="off"></label>
+                    </div>
+                </div>
+                <div id="resourceGrid" class="app-grid studio-grid"></div>
+                <div id="resourceEmpty" class="content-empty" hidden><strong id="emptyTitle">暂无对话 Agent</strong><span id="emptyDescription">当前还没有可设计的对话 Agent</span></div>
+                <section id="modelConfigPanel" class="model-config-panel" hidden>
+                    <div class="provider-section">
+                        <div class="provider-section-heading">
+                            <h2>模型列表</h2>
+                            <span>已添加的供应商与模型</span>
+                        </div>
+                        <div id="modelConfigList" class="model-config-list"></div>
+                    </div>
+                    <div id="modelConfigEmpty" class="content-empty model-config-empty" hidden>
+                        <strong>暂无模型配置</strong>
+                        <span>请从下方选择供应商并完成 API Key 配置</span>
+                    </div>
+                    <div id="pendingProviderSection" class="provider-section" hidden>
+                        <div class="provider-section-heading">
+                            <h2>待配置</h2>
+                            <span>供应商已可用，但尚未添加模型</span>
+                        </div>
+                        <div id="pendingProviderList" class="provider-pending-list"></div>
+                    </div>
+                    <div class="provider-market-section">
+                        <div class="provider-market-heading">
+                            <h2>可用供应商</h2>
+                            <span>选择供应商并配置密钥后，系统会自动读取模型列表</span>
+                        </div>
+                        <div id="availableProviderList" class="provider-market-grid"></div>
+                    </div>
+                </section>
+            </section>
+        </main>
+    </div>
+    <dialog id="createResourceDialog" class="studio-dialog">
+        <form id="createResourceForm" method="dialog">
+            <div class="dialog-header">
+                <h2 id="createResourceTitle">新建工作流</h2>
+                <button id="closeCreateResourceButton" class="dialog-close-button" type="button" aria-label="关闭" title="关闭">×</button>
+            </div>
+            <div class="resource-identity-row">
+                <label class="resource-icon-field" aria-label="选择图标">
+                    <span class="resource-icon-picker" title="点击选择本地图标">
+                        <span id="resourceIconPreview" class="resource-icon-preview" aria-hidden="true"></span>
+                        <span class="resource-icon-edit" aria-hidden="true">+</span>
+                    </span>
+                    <input id="resourceIconFileInput" type="file" accept="image/*" class="visually-hidden">
+                    <input id="newResourceIconInput" type="hidden">
+                </label>
+                <label class="dialog-field resource-name-field">
+                    名称
+                    <input id="newResourceNameInput" maxlength="80" required autocomplete="off" placeholder="请输入名称">
+                </label>
+            </div>
+            <label class="dialog-field">
+                描述
+                <textarea id="newResourceDescriptionInput" maxlength="300" placeholder="请输入描述"></textarea>
+            </label>
+            <div class="dialog-actions">
+                <button id="cancelCreateResourceButton" class="ghost-button" type="button">取消</button>
+                <button id="confirmCreateResourceButton" class="primary-button" type="submit">确定</button>
+            </div>
+        </form>
+    </dialog>
+    <dialog id="modelConfigDialog" class="studio-dialog model-config-dialog">
+        <form id="modelConfigForm" method="dialog">
+            <div class="dialog-header">
+                <h2 id="modelConfigDialogTitle">添加模型</h2>
+                <button id="closeModelConfigButton" class="dialog-close-button" type="button" aria-label="关闭" title="关闭">×</button>
+            </div>
+            <div id="modelConfigProviderSummary" class="model-config-provider-summary" hidden></div>
+            <div class="model-config-form-grid">
+                <label id="modelConfigNameField" class="dialog-field" hidden>
+                    配置名称
+                    <input id="modelConfigNameInput" maxlength="80" required autocomplete="off" placeholder="例如：OpenAI GPT-4o">
+                </label>
+                <label id="modelConfigProviderField" class="dialog-field">
+                    模型供应商
+                    <input id="modelConfigProviderInput" maxlength="60" required autocomplete="off" placeholder="例如：openai">
+                </label>
+                <label id="modelConfigModelField" class="dialog-field">
+                    模型名称
+                    <input id="modelConfigModelInput" maxlength="120" required autocomplete="off" placeholder="例如：gpt-4o-mini">
+                </label>
+                <div id="modelConfigTypeField" class="dialog-field dialog-segmented-field">
+                    <div class="dialog-segmented-title">模型类型</div>
+                    <div id="modelConfigTypeTabs" class="dialog-segmented-control" role="tablist" aria-label="模型类型">
+                        <label class="dialog-segmented-option">
+                            <input type="radio" name="modelConfigType" value="llm" checked>
+                            <span>LLM</span>
+                        </label>
+                        <label class="dialog-segmented-option">
+                            <input type="radio" name="modelConfigType" value="text-embedding">
+                            <span>Text Embedding</span>
+                        </label>
+                        <label class="dialog-segmented-option">
+                            <input type="radio" name="modelConfigType" value="rerank">
+                            <span>Rerank</span>
+                        </label>
+                        <label class="dialog-segmented-option">
+                            <input type="radio" name="modelConfigType" value="speech2text">
+                            <span>Speech2text</span>
+                        </label>
+                        <label class="dialog-segmented-option">
+                            <input type="radio" name="modelConfigType" value="tts">
+                            <span>TTS</span>
+                        </label>
+                    </div>
+                </div>
+                <label id="modelConfigEndpointField" class="dialog-field">
+                    接口地址
+                    <input id="modelConfigEndpointInput" maxlength="300" required autocomplete="off" placeholder="例如：https://api.openai.com/v1">
+                </label>
+                <label id="modelConfigApiKeyField" class="dialog-field">
+                    API Key
+                    <input id="modelConfigApiKeyInput" maxlength="300" required autocomplete="off" placeholder="请输入 API Key">
+                </label>
+                <label id="modelConfigContextLengthField" class="dialog-field">
+                    模型上下文长度
+                    <input id="modelConfigContextLengthInput" type="number" min="1" step="1" inputmode="numeric" value="4096" placeholder="例如：4096">
+                </label>
+                <label class="dialog-checkbox-field">
+                    <input id="modelConfigEnabledInput" type="checkbox" checked>
+                    <span>启用该模型配置</span>
+                </label>
+            </div>
+            <div class="dialog-actions">
+                <button id="cancelModelConfigButton" class="ghost-button" type="button">取消</button>
+                <button id="saveModelConfigButton" class="primary-button" type="submit">添加</button>
+            </div>
+        </form>
+    </dialog>
+    <dialog id="providerSetupDialog" class="studio-dialog provider-setup-dialog">
+        <form id="providerSetupForm" method="dialog">
+            <div class="dialog-header">
+                <div>
+                    <h2 id="providerSetupTitle">配置模型供应商</h2>
+                    <p id="providerSetupDescription" class="dialog-description"></p>
+                </div>
+                <button id="closeProviderSetupButton" class="dialog-close-button" type="button" aria-label="关闭" title="关闭">×</button>
+            </div>
+            <label class="dialog-field">
+                API 地址
+                <input id="providerApiAddressInput" readonly>
+            </label>
+            <label class="dialog-field">
+                API Key
+                <input id="providerApiKeyInput" type="password" maxlength="500" autocomplete="off" placeholder="请输入供应商 API Key">
+            </label>
+            <div class="dialog-actions">
+                <button id="cancelProviderSetupButton" class="ghost-button" type="button">取消</button>
+                <button id="enableProviderButton" class="primary-button" type="submit">确定</button>
+            </div>
+        </form>
+    </dialog>
+    <div id="toast" class="toast" role="status"></div>
+    <script src="/studio.js?v=37"></script>
+</body>
+</html>

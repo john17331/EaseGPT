@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>对话 Agent 设计 - EaseGPT</title>
+    <link rel="stylesheet" href="/agent-designer.css?v=14">
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar" aria-label="知识库导航">
+            <div class="brand-header">
+                <div class="admin-brand" aria-label="EaseGPT 创作">
+                    <img class="brand-logo" src="/assets/easegpt.svg" alt="">
+                    <span class="brand-copy">
+                        <strong>EaseGPT 创作</strong>
+                        <span>企业级 AI 应用平台</span>
+                    </span>
+                </div>
+            </div>
+            <nav class="knowledge-nav" aria-label="知识库功能">
+                <button class="knowledge-nav-item active" type="button" data-nav-view="design">
+                    <img src="/assets/settingweb.svg" alt="" aria-hidden="true">
+                    <span>设计</span>
+                </button>
+                <button class="knowledge-nav-item" type="button" data-nav-view="logs">
+                    <img src="/assets/log.svg" alt="" aria-hidden="true">
+                    <span>日志</span>
+                </button>
+            </nav>
+        </aside>
+
+        <main class="agent-designer">
+            <div class="agent-workspace" data-main-view="design">
+                <section class="config-panel">
+                    <div class="agent-profile">
+                        <span id="agentIcon" class="agent-profile-icon"></span>
+                        <span class="agent-profile-copy">
+                            <strong id="agentName">正在加载...</strong>
+                            <small id="agentDescription">对话 Agent</small>
+                        </span>
+                    </div>
+                    <div class="config-scroll">
+                        <div class="config-section" data-config-section="orchestration">
+                            <label class="field">模型
+                                <div id="providerPicker" class="floating-model-picker"></div>
+                                <select id="providerSelect" class="native-hidden"></select>
+                            </label>
+                            <label class="field">系统提示词<textarea id="instructionsInput" rows="10" placeholder="描述 Agent 的角色、任务、边界和回答要求"></textarea></label>
+                        </div>
+
+                        <div class="config-section" data-config-section="knowledge">
+                            <label class="field knowledge-field">
+                                <span class="knowledge-field-header">
+                                    <span>知识库</span>
+                                    <span class="knowledge-field-actions">
+                                        <button id="knowledgeRecallButton" class="knowledge-action-button" type="button">
+                                            <img src="/assets/setting.svg" alt="">
+                                            <span>召回设置</span>
+                                        </button>
+                                        <button id="knowledgeAddButton" class="knowledge-action-button primary" type="button" data-picker-trigger="knowledge">
+                                            <img src="/assets/plus.svg" alt="">
+                                            <span>添加</span>
+                                        </button>
+                                    </span>
+                                </span>
+                                <div id="knowledgePicker" class="floating-model-picker"></div>
+                                <select id="knowledgeSelect" class="native-hidden"></select>
+                            </label>
+                        </div>
+                    </div>
+                </section>
+
+                <aside id="previewPanel" class="preview-panel">
+                    <div class="preview-toolbar">
+                        <div class="preview-toolbar-actions">
+                            <div class="save-dropdown">
+                                <button id="saveMenuButton" class="primary-button save-dropdown-button" type="button" aria-haspopup="menu" aria-expanded="false">
+                                    <span>保存</span><span class="dropdown-arrow" aria-hidden="true"><img src="/assets/down.svg" alt=""></span>
+                                </button>
+                                <div id="saveMenu" class="save-menu" hidden>
+                                    <div class="save-menu-history">
+                                        <div>
+                                            <span>最近保存</span>
+                                            <strong id="lastSavedText">尚未保存</strong>
+                                        </div>
+                                        <button id="restoreButton" class="restore-button" type="button">恢复</button>
+                                    </div>
+                                    <button id="saveUpdateButton" class="save-update-button" type="button">保存更新</button>
+                                    <div class="save-menu-divider"></div>
+                                    <button id="runButton" class="run-menu-button" type="button">
+                                        <span class="run-icon" aria-hidden="true">▶</span>
+                                        <span>运行</span>
+                                        <span class="run-arrow" aria-hidden="true">→</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="preview-header"><div><strong>调试与预览</strong></div><button id="resetPreviewButton" type="button">重置</button></div>
+                    <div id="previewMessages" class="preview-messages"></div>
+                    <div id="suggestionList" class="suggestion-list"></div>
+                    <form id="previewForm" class="preview-composer">
+                        <textarea id="previewInput" rows="1" placeholder="和 Agent 对话"></textarea>
+                        <button type="submit" aria-label="发送">发送</button>
+                        <button id="stopPreviewButton" type="button" class="preview-stop-button" hidden>终止</button>
+                    </form>
+                </aside>
+            </div>
+            <section class="agent-logs-view" data-main-view="logs" hidden>
+                <div class="logs-toolbar">
+                    <div class="logs-toolbar-copy">
+                        <strong>执行日志</strong>
+                        <span>查看该对话 Agent 的执行记录、对话内容与结果信息</span>
+                    </div>
+                    <form id="logsFilterForm" class="logs-filter-form">
+                        <label class="logs-time-field">
+                            开始时间
+                            <input id="logsStartInput" type="text" inputmode="numeric" maxlength="19"
+                                   placeholder="yyyy-MM-dd HH:mm:ss" autocomplete="off">
+                        </label>
+                        <label class="logs-time-field">
+                            结束时间
+                            <input id="logsEndInput" type="text" inputmode="numeric" maxlength="19"
+                                   placeholder="yyyy-MM-dd HH:mm:ss" autocomplete="off">
+                        </label>
+                        <label class="logs-keyword-field">
+                            关键字
+                            <input id="logsKeywordInput" type="search" placeholder="搜索对话内容或结果">
+                        </label>
+                        <button class="primary-button" type="submit">查询</button>
+                    </form>
+                </div>
+                <div class="logs-table-shell">
+                    <table class="logs-table">
+                        <thead>
+                            <tr>
+                                <th>开始时间</th>
+                                <th>状态</th>
+                                <th>对话内容</th>
+                                <th>结果信息</th>
+                                <th>耗时</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logsTableBody"></tbody>
+                    </table>
+                    <div id="logsEmpty" class="logs-empty" hidden>暂无执行记录</div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <dialog id="recallSettingsDialog" class="recall-settings-dialog">
+        <form id="recallSettingsForm" class="recall-settings-sheet" method="dialog">
+            <div class="recall-settings-header">
+                <div>
+                    <strong>召回设置</strong>
+                    <p>从多个知识库中检索知识，可配置 Rerank 模型、Top K 和默认 Score 阈值。</p>
+                </div>
+                <button id="closeRecallSettingsButton" class="recall-settings-close" type="button" aria-label="关闭">×</button>
+            </div>
+            <div class="recall-settings-body">
+                <label class="field">
+                    Rerank 模型
+                    <div id="recallRerankPicker" class="floating-model-picker"></div>
+                    <select id="recallRerankSelect" class="native-hidden"></select>
+                </label>
+                <label class="field">
+                    Top K
+                    <div class="recall-slider-row">
+                        <input id="recallTopKInput" type="number" min="1" max="12" step="1">
+                        <input id="recallTopKRange" type="range" min="1" max="12" step="1">
+                    </div>
+                </label>
+                <div class="recall-threshold-block">
+                    <label class="recall-threshold-toggle">
+                        <input id="recallScoreThresholdEnabled" type="checkbox">
+                        <span>Score 阈值</span>
+                    </label>
+                    <div class="recall-slider-row">
+                        <input id="recallScoreThresholdInput" type="number" min="0" max="1" step="0.01">
+                        <input id="recallScoreThresholdRange" type="range" min="0" max="1" step="0.01">
+                    </div>
+                </div>
+            </div>
+            <div class="recall-settings-footer">
+                <button id="cancelRecallSettingsButton" class="secondary-button" type="button">取消</button>
+                <button class="primary-button" type="submit">保存</button>
+            </div>
+        </form>
+    </dialog>
+    <div id="toast" class="toast" role="status"></div>
+    <script src="/sse-client.js?v=1"></script>
+    <script src="/agent-designer.js?v=11"></script>
+</body>
+</html>

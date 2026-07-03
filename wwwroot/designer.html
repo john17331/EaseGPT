@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>EaseGPT 工作流设计器</title>
+    <link rel="stylesheet" href="/designer.css?v=31">
+</head>
+<body>
+    <div class="designer-shell">
+        <aside class="palette sidebar" aria-label="工作流导航">
+            <div class="brand-header">
+                <div class="admin-brand" aria-label="EaseGPT 创作">
+                    <img class="brand-logo" src="/assets/easegpt.svg" alt="">
+                    <span class="brand-copy">
+                        <strong>EaseGPT 创作</strong>
+                        <span>企业级 AI 应用平台</span>
+                    </span>
+                </div>
+            </div>
+            <nav class="knowledge-nav" aria-label="工作流功能">
+                <button class="knowledge-nav-item active" type="button" data-designer-view="design">
+                    <img src="/assets/settingweb.svg" alt="" aria-hidden="true">
+                    <span>设计</span>
+                </button>
+                <button class="knowledge-nav-item" type="button" data-designer-view="logs">
+                    <img src="/assets/log.svg" alt="" aria-hidden="true">
+                    <span>日志</span>
+                </button>
+            </nav>
+        </aside>
+
+        <div class="designer-topbar">
+            <div class="canvas-toolbar-left">
+                <div class="workflow-summary">
+                    <span id="workflowIcon" class="workflow-summary-icon"></span>
+                    <span class="workflow-summary-copy">
+                        <strong id="workflowTitle">正在加载...</strong>
+                        <span id="workflowDescription">工作流信息加载中</span>
+                    </span>
+                </div>
+            </div>
+            <div class="canvas-toolbar-actions">
+                <button id="runTestButton" class="toolbar-action-button run-test-button" type="button">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7Z"/></svg>
+                    运行测试
+                </button>
+                <button id="systemVariablesButton" class="toolbar-action-button" type="button"><span>ENV</span>系统变量</button>
+                <div class="publish-split-button">
+                    <button id="saveButton" class="publish-button" type="button">保存</button>
+                    <button id="publishMenuButton" class="publish-menu-button" type="button" aria-label="保存菜单" title="保存菜单">▾</button>
+                    <div id="publishMenu" class="publish-menu" hidden>
+                        <button id="saveAndRunButton" type="button">保存并运行</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <main class="canvas-panel">
+            <div id="canvasViewport" class="canvas-viewport">
+                <div class="canvas-floating-tools" aria-label="画布工具">
+                    <button id="addNodeMenuButton" class="canvas-floating-button active" type="button" aria-expanded="false" aria-controls="floatingNodePalette" title="新增">
+                        <img src="/assets/plus.svg" alt="" aria-hidden="true">
+                    </button>
+                    <button id="zoomInButton" class="canvas-floating-button" type="button" title="放大">
+                        <img src="/assets/zoomin.svg" alt="" aria-hidden="true">
+                    </button>
+                    <button id="zoomOutButton" class="canvas-floating-button" type="button" title="缩小">
+                        <img src="/assets/zoomout.svg" alt="" aria-hidden="true">
+                    </button>
+                </div>
+                <div id="floatingNodePalette" class="floating-node-palette" hidden>
+                    <div class="palette-tabs" role="tablist" aria-label="节点分类">
+                        <button class="palette-tab active" type="button" data-palette-tab="nodes" role="tab" aria-selected="true">基础</button>
+                        <button class="palette-tab" type="button" data-palette-tab="extensions" role="tab" aria-selected="false">扩展</button>
+                    </div>
+                    <div id="nodePalette" class="node-palette"></div>
+                </div>
+                <div id="canvasWorld" class="canvas-world">
+                    <svg id="edgeLayer" class="edge-layer"></svg>
+                    <div id="canvas" class="canvas"></div>
+                </div>
+            </div>
+        </main>
+
+        <div id="rightPanelResizer" class="panel-resizer" role="separator" aria-label="调整右侧栏宽度" aria-orientation="vertical"></div>
+
+        <aside class="property-panel" aria-label="节点配置">
+            <h2 id="propertyTitle">配置</h2>
+            <div id="propertyEmpty" class="empty-state">请选择一个节点或连线。</div>
+
+            <form id="nodeForm" class="node-form" hidden>
+                <label>
+                    &#25551;&#36848;
+                    <input id="nodeNameInput" type="text" placeholder="&#21487;&#36873;">
+                </label>
+
+                <div id="genericSettingsPanel">
+                    <label>
+                        &#37197;&#32622; JSON
+                        <textarea id="nodeSettingsInput" rows="14" spellcheck="false"></textarea>
+                    </label>
+                </div>
+
+                <div id="manualSettingsPanel" hidden>
+                    <div class="manual-field-heading">
+                        <strong>&#26234;&#33021;&#34920;&#21333;</strong>
+                        <button id="addManualFieldButton" class="icon-add-button" type="button" title="&#26032;&#22686;&#36755;&#20837;" aria-label="&#26032;&#22686;&#36755;&#20837;">+</button>
+                    </div>
+                    <p class="field-hint">&#35774;&#32622;&#30340;&#34920;&#21333;&#21487;&#22312;&#24037;&#20316;&#27969;&#31243;&#20013;&#20351;&#29992;&#12290;</p>
+                    <div id="manualFieldList" class="manual-field-list"></div>
+                </div>
+
+                <div id="llmSettingsPanel" hidden>
+                    <label>
+                        &#22823;&#27169;&#22411;&#37197;&#32622;
+                        <div id="llmProviderConfigPicker" class="floating-model-picker"></div>
+                        <select id="llmProviderConfigSelect" class="native-hidden"></select>
+                    </label>
+                    <label>
+                        &#31995;&#32479;&#25552;&#31034;&#35789;
+                        <textarea id="llmSystemPromptInput" rows="6" placeholder="&#23450;&#20041;&#27169;&#22411;&#35282;&#33394;&#21644;&#22238;&#31572;&#35201;&#27714;"></textarea>
+                    </label>
+                    <label>
+                        &#29992;&#25143;&#25552;&#31034;&#35789;
+                        <textarea id="llmUserPromptInput" rows="6" placeholder="&#20363;&#22914;&#65306;{{question}}"></textarea>
+                    </label>
+                    <label>
+                        &#36229;&#26102;&#26102;&#38388;&#65288;&#31186;&#65289;
+                        <input id="llmTimeoutInput" type="number" min="1" max="600" step="1">
+                    </label>
+                    <label>
+                        &#20869;&#32622;&#25991;&#20214;
+                        <input id="llmFileInput" type="file" multiple>
+                    </label>
+                    <div id="llmFileList" class="built-in-file-list"></div>
+                    <p class="field-hint">&#20869;&#32622;&#25991;&#20214;&#20250;&#38543;&#24037;&#20316;&#27969;&#20445;&#23384;&#65292;&#25191;&#34892;&#26102;&#20250;&#19982;&#29992;&#25143;&#19978;&#20256;&#25991;&#20214;&#19968;&#36215;&#25552;&#20132;&#32473;&#27169;&#22411;&#12290;</p>
+                </div>
+
+                <div id="scheduleSettingsPanel" hidden>
+                    <label>
+                        &#25191;&#34892;&#26041;&#24335;
+                        <select id="scheduleTypeSelect">
+                            <option value="interval">&#22266;&#23450;&#38388;&#38548;</option>
+                            <option value="cron">Cron &#34920;&#36798;&#24335;</option>
+                        </select>
+                    </label>
+                    <label id="scheduleIntervalField">
+                        &#38388;&#38548;&#31186;&#25968;
+                        <input id="scheduleIntervalInput" type="number" min="1" max="86400" step="1">
+                    </label>
+                    <div id="scheduleCronFields" hidden>
+                        <label>
+                            Cron &#34920;&#36798;&#24335;
+                            <input id="scheduleCronInput" type="text" placeholder="0 9 * * 1-5">
+                        </label>
+                        <label>
+                            &#26102;&#21306;
+                            <select id="scheduleTimeZoneSelect">
+                                <option value="Asia/Shanghai">Asia/Shanghai&#65288;&#20013;&#22269;&#65289;</option>
+                                <option value="UTC">UTC</option>
+                                <option value="Asia/Tokyo">Asia/Tokyo</option>
+                                <option value="Europe/London">Europe/London</option>
+                                <option value="America/New_York">America/New_York</option>
+                            </select>
+                        </label>
+                        <p class="field-hint">&#20351;&#29992;&#26631;&#20934; 5 &#27573;&#26684;&#24335;&#65306;&#20998;&#38047; &#23567;&#26102; &#26085; &#26376; &#26143;&#26399;&#12290;&#20363;&#22914;&#24037;&#20316;&#26085;&#19978;&#21320; 9 &#28857;&#65306;0 9 * * 1-5&#12290;</p>
+                    </div>
+                </div>
+
+                <div id="classifierSettingsPanel" hidden>
+                    <label>
+                        &#22823;&#27169;&#22411;&#37197;&#32622;
+                        <select id="classifierProviderConfigSelect"></select>
+                    </label>
+                    <label>
+                        &#24453;&#20998;&#31867;&#20869;&#23481;
+                        <textarea id="classifierInput" rows="3" placeholder="&#20363;&#22914;&#65306;{{question}}"></textarea>
+                    </label>
+                    <label>
+                        &#34917;&#20805;&#35201;&#27714;
+                        <textarea id="classifierInstruction" rows="3" placeholder="&#21487;&#36873;&#65292;&#20363;&#22914;&#65306;&#20248;&#20808;&#35782;&#21035;&#26126;&#30830;&#30340;&#19994;&#21153;&#21150;&#29702;&#24847;&#22270;"></textarea>
+                    </label>
+                    <div class="classifier-heading">
+                        <strong>&#38382;&#39064;&#20998;&#31867;</strong>
+                        <button id="addClassifierClassButton" class="icon-add-button" type="button" title="&#28155;&#21152;&#20998;&#31867;" aria-label="&#28155;&#21152;&#20998;&#31867;">+</button>
+                    </div>
+                    <div id="classifierClassList" class="classifier-class-list"></div>
+                    <p class="field-hint">&#20998;&#31867;&#21517;&#31216;&#21644;&#36755;&#20986;&#31471;&#21475;&#30001;&#31995;&#32479;&#33258;&#21160;&#32534;&#21495;&#65292;&#21482;&#38656;&#35201;&#22635;&#20889;&#27599;&#20010;&#20998;&#31867;&#30340;&#35821;&#20041;&#25551;&#36848;&#12290;</p>
+                </div>
+
+                <div id="knowledgeRetrievalSettingsPanel" hidden>
+                    <label>
+                        &#26597;&#35810;&#25991;&#26412;
+                        <textarea id="knowledgeRetrievalQueryInput" rows="3" placeholder="&#20363;&#22914;&#65306;{{question}}"></textarea>
+                    </label>
+                    <div class="knowledge-retrieval-picker-anchor">
+                        <div class="classifier-heading">
+                            <strong>&#30693;&#35782;&#24211;</strong>
+                            <button id="addKnowledgeRetrievalBaseButton" class="icon-add-button" type="button"
+                                    aria-expanded="false" aria-controls="knowledgeRetrievalBasePicker"
+                                    title="&#28155;&#21152;&#30693;&#35782;&#24211;" aria-label="&#28155;&#21152;&#30693;&#35782;&#24211;">+</button>
+                        </div>
+                        <div id="knowledgeRetrievalBasePicker" class="knowledge-retrieval-picker" hidden></div>
+                    </div>
+                    <div id="knowledgeRetrievalBaseList" class="knowledge-retrieval-base-list"></div>
+                    <div class="knowledge-retrieval-recall-heading" aria-hidden="true"></div>
+                    <label>
+                        Rerank &#27169;&#22411;
+                        <select id="knowledgeRetrievalRerankSelect"></select>
+                    </label>
+                    <label>
+                        Top K
+                        <input id="knowledgeRetrievalTopKInput" type="number" min="1" max="12" step="1">
+                    </label>
+                    <label class="toggle-field">
+                        <input id="knowledgeRetrievalThresholdEnabledInput" type="checkbox">
+                        <span>Score &#38408;&#20540;</span>
+                    </label>
+                    <label id="knowledgeRetrievalThresholdField">
+                        &#40664;&#35748; Score &#38408;&#20540;
+                        <input id="knowledgeRetrievalThresholdInput" type="number" min="0" max="1" step="0.01">
+                    </label>
+                    <p class="field-hint">&#22810;&#20010;&#30693;&#35782;&#24211;&#20250;&#20998;&#21035;&#21484;&#22238;&#65292;&#28982;&#21518;&#25353;&#20998;&#25968;&#21512;&#24182;&#25490;&#24207;&#24182;&#25130;&#21462; Top K&#12290;&#35813;&#33410;&#28857;&#21482;&#36820;&#22238;&#21629;&#20013; Chunk&#65292;&#19981;&#29983;&#25104;&#31572;&#26696;&#12290;</p>
+                </div>
+
+                <div id="httpSettingsPanel" hidden>
+                    <label>
+                        &#35831;&#27714;&#26041;&#27861;
+                        <select id="httpMethodSelect">
+                            <option value="GET">GET</option>
+                            <option value="POST">POST</option>
+                            <option value="PUT">PUT</option>
+                            <option value="PATCH">PATCH</option>
+                            <option value="DELETE">DELETE</option>
+                        </select>
+                    </label>
+                    <label>
+                        &#35831;&#27714;&#22320;&#22336;
+                        <input id="httpUrlInput" type="url" placeholder="https://api.example.com/items/{{id}}">
+                    </label>
+                    <div class="classifier-heading">
+                        <strong>&#35831;&#27714;&#21442;&#25968;</strong>
+                        <button id="addHttpQueryButton" class="icon-add-button" type="button" title="&#28155;&#21152;&#21442;&#25968;" aria-label="&#28155;&#21152;&#21442;&#25968;">+</button>
+                    </div>
+                    <div id="httpQueryList" class="http-key-value-list"></div>
+                    <div class="classifier-heading">
+                        <strong>&#35831;&#27714;&#22836;</strong>
+                        <button id="addHttpHeaderButton" class="icon-add-button" type="button" title="&#28155;&#21152;&#35831;&#27714;&#22836;" aria-label="&#28155;&#21152;&#35831;&#27714;&#22836;">+</button>
+                    </div>
+                    <div id="httpHeaderList" class="http-key-value-list"></div>
+                    <label>
+                        &#35831;&#27714;&#20307;
+                        <textarea id="httpBodyInput" rows="8" placeholder='&#20363;&#22914;&#65306;{"question":"{{question}}"}'></textarea>
+                    </label>
+                    <div class="http-number-grid">
+                        <label>
+                            &#36229;&#26102;&#26102;&#38388;&#65288;&#31186;&#65289;
+                            <input id="httpTimeoutInput" type="number" min="1" max="300" step="1">
+                        </label>
+                        <label>
+                            &#37325;&#35797;&#27425;&#25968;
+                            <input id="httpRetryInput" type="number" min="0" max="5" step="1">
+                        </label>
+                    </div>
+                    <p class="field-hint">URL&#12289;&#35831;&#27714;&#22836;&#21644;&#35831;&#27714;&#20307;&#22343;&#25903;&#25345;&#20351;&#29992; {{&#21464;&#37327;&#21517;}}&#12290;&#20165;&#32593;&#32476;&#38169;&#35823;&#12289;&#36229;&#26102;&#12289;408&#12289;429 &#21644; 5xx &#21709;&#24212;&#20250;&#37325;&#35797;&#12290;</p>
+                </div>
+
+                <div id="webCrawlerSettingsPanel" hidden>
+                    <label>
+                        &#32593;&#39029;&#38142;&#25509;
+                        <input id="webCrawlerUrlInput" type="text" placeholder="https://example.com/{{path}}">
+                    </label>
+                    <label>
+                        User Agent
+                        <textarea id="webCrawlerUserAgentInput" rows="3" placeholder="Mozilla/5.0 ..."></textarea>
+                    </label>
+                    <label class="toggle-field">
+                        <input id="webCrawlerGenerateSummaryInput" type="checkbox">
+                        <span>&#29983;&#25104;&#25688;&#35201;</span>
+                    </label>
+                    <div class="http-number-grid">
+                        <label>
+                            &#36229;&#26102;&#26102;&#38388;&#65288;&#31186;&#65289;
+                            <input id="webCrawlerTimeoutInput" type="number" min="1" max="300" step="1">
+                        </label>
+                        <label>
+                            &#37325;&#35797;&#27425;&#25968;
+                            <input id="webCrawlerRetryInput" type="number" min="0" max="5" step="1">
+                        </label>
+                    </div>
+                    <label>
+                        &#26368;&#22823;&#27491;&#25991;&#38271;&#24230;
+                        <input id="webCrawlerMaxLengthInput" type="number" min="1000" max="500000" step="1000">
+                    </label>
+                    <p class="field-hint">&#32593;&#39029;&#38142;&#25509;&#21644; User Agent &#25903;&#25345; {{&#21464;&#37327;&#21517;}}&#12290;&#33410;&#28857;&#20250;&#25552;&#21462;&#26631;&#39064;&#12289;&#25551;&#36848;&#12289;&#27491;&#25991;&#12289;&#25688;&#35201;&#21644;&#38142;&#25509;&#21015;&#34920;&#65292;&#19981;&#20801;&#35768;&#35775;&#38382;&#26412;&#26426;&#25110;&#20869;&#32593;&#22320;&#22336;&#12290;</p>
+                </div>
+
+                <div id="wecomSettingsPanel" hidden>
+                    <label>
+                        &#26426;&#22120;&#20154; Webhook &#22320;&#22336;
+                        <input id="wecomWebhookUrlInput" type="url" placeholder="https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=...">
+                    </label>
+                    <label>
+                        &#28040;&#24687;&#20869;&#23481;
+                        <textarea id="wecomContentInput" rows="7" placeholder="&#20363;&#22914;&#65306;{{llmText}}"></textarea>
+                    </label>
+                    <label>
+                        @&#25104;&#21592;&#36134;&#21495;
+                        <input id="wecomMentionedListInput" type="text" placeholder="&#22810;&#20010;&#36134;&#21495;&#29992;&#36887;&#21495;&#20998;&#38548;&#65292;@&#25152;&#26377;&#20154;&#20351;&#29992; @all">
+                    </label>
+                    <label>
+                        @&#25163;&#26426;&#21495;
+                        <input id="wecomMentionedMobileListInput" type="text" placeholder="&#22810;&#20010;&#25163;&#26426;&#21495;&#29992;&#36887;&#21495;&#20998;&#38548;">
+                    </label>
+                    <p class="field-hint">&#28040;&#24687;&#20869;&#23481;&#21644;&#25104;&#21592;&#23383;&#27573;&#25903;&#25345;&#20351;&#29992; {{&#21464;&#37327;&#21517;}}&#12290;</p>
+                </div>
+
+                <div id="databaseSettingsPanel" hidden>
+                    <label>
+                        &#25968;&#25454;&#24211;&#31867;&#22411;
+                        <select id="databaseProviderSelect">
+                            <option value="sqlserver">SQL Server</option>
+                            <option value="mysql">MySQL</option>
+                            <option value="postgresql">PostgreSQL</option>
+                        </select>
+                    </label>
+                    <div class="database-connection-grid">
+                        <label>
+                            &#25968;&#25454;&#24211;&#22320;&#22336;
+                            <input id="databaseHostInput" type="text" placeholder="127.0.0.1">
+                        </label>
+                        <label>
+                            &#31471;&#21475;
+                            <input id="databasePortInput" type="number" min="1" max="65535" step="1">
+                        </label>
+                    </div>
+                    <label>
+                        &#25968;&#25454;&#24211;&#21517;&#31216;
+                        <input id="databaseNameInput" type="text">
+                    </label>
+                    <label>
+                        &#29992;&#25143;&#21517;
+                        <input id="databaseUsernameInput" type="text" autocomplete="off">
+                    </label>
+                    <label>
+                        &#23494;&#30721;
+                        <input id="databasePasswordInput" type="password" autocomplete="new-password">
+                    </label>
+                    <label class="toggle-field">
+                        <input id="databaseSslInput" type="checkbox">
+                        <span>&#20351;&#29992; SSL/TLS &#36830;&#25509;</span>
+                    </label>
+                    <label>
+                        &#25191;&#34892;&#27169;&#24335;
+                        <select id="databaseModeSelect">
+                            <option value="query">&#26597;&#35810;&#25968;&#25454;</option>
+                            <option value="execute">&#25191;&#34892;&#21629;&#20196;</option>
+                        </select>
+                    </label>
+                    <label>
+                        SQL
+                        <textarea id="databaseSqlInput" rows="10" placeholder="SELECT * FROM users WHERE id = @id"></textarea>
+                    </label>
+                    <div class="classifier-heading">
+                        <strong>SQL &#21442;&#25968;</strong>
+                        <button id="addDatabaseParameterButton" class="icon-add-button" type="button" title="&#28155;&#21152; SQL &#21442;&#25968;" aria-label="&#28155;&#21152; SQL &#21442;&#25968;">+</button>
+                    </div>
+                    <div id="databaseParameterList" class="database-parameter-list"></div>
+                    <label>
+                        &#36229;&#26102;&#26102;&#38388;&#65288;&#31186;&#65289;
+                        <input id="databaseTimeoutInput" type="number" min="1" max="300" step="1">
+                    </label>
+                    <p class="field-hint">&#21442;&#25968;&#20540;&#25903;&#25345; {{&#21464;&#37327;&#21517;}}&#12290;&#23494;&#30721;&#20250;&#38543;&#24037;&#20316;&#27969;&#37197;&#32622;&#20445;&#23384;&#21040; LiteDB&#65292;&#35831;&#38480;&#21046;&#25968;&#25454;&#24211;&#36134;&#21495;&#26435;&#38480;&#12290;</p>
+                </div>
+
+                <div id="outputSettingsPanel" hidden>
+                    <label>
+                        &#36755;&#20986;&#21464;&#37327;
+                        <select id="outputVariableSelect"></select>
+                    </label>
+                    <label>
+                        输出格式
+                        <select id="outputFormatSelect">
+                            <option value="json">默认输出</option>
+                            <option value="table">表格输出</option>
+                        </select>
+                    </label>
+                    <label id="outputCustomValueField" hidden>
+                        &#33258;&#23450;&#20041;&#20869;&#23481;
+                        <textarea id="outputCustomValueInput" rows="6" placeholder="&#20363;&#22914;&#65306;&#38382;&#39064;&#65306;{{question}}&#10;&#22238;&#31572;&#65306;{{llmText}}"></textarea>
+                    </label>
+                    <div id="outputTableSettings" hidden>
+                        <div class="manual-field-heading">
+                            <strong class="output-table-section-title">
+                                <img src="/assets/png/Table.png" alt="" aria-hidden="true">
+                                表格列
+                            </strong>
+                            <button id="addOutputTableColumnButton" class="icon-add-button" type="button"
+                                    title="新增表格列" aria-label="新增表格列">+</button>
+                        </div>
+                        <p class="field-hint">设置列标题和 JSON 字段路径，嵌套字段使用英文句点，例如 user.name；使用 $ 表示当前整行。</p>
+                        <div id="outputTableColumnList" class="output-table-column-list"></div>
+                    </div>
+                    <p class="field-hint">&#26410;&#36873;&#25321;&#21464;&#37327;&#26102;&#65292;&#36755;&#20986;&#33410;&#28857;&#20250;&#25910;&#21040;&#30340;&#20840;&#37096;&#25968;&#25454;&#12290;</p>
+                </div>
+            </form>
+
+            <div id="edgeForm" class="edge-form" hidden>
+                <label>
+                    来源
+                    <input id="edgeSourceInput" type="text" readonly>
+                </label>
+                <label>
+                    目标
+                    <input id="edgeTargetInput" type="text" readonly>
+                </label>
+                <label>
+                    端口
+                    <input id="edgePortInput" type="text">
+                </label>
+                <button id="applyEdgeButton" class="primary-button" type="button">应用连线</button>
+            </div>
+        </aside>
+
+        <section class="designer-logs-view" aria-label="工作流执行日志" hidden>
+            <div class="logs-toolbar">
+                <div class="logs-toolbar-copy">
+                    <strong>执行日志</strong>
+                    <span>查看该工作流的运行记录、节点输入输出与错误信息</span>
+                </div>
+                <form id="logsFilterForm" class="logs-filter-form">
+                    <label class="logs-time-field">
+                        开始时间
+                        <input id="logsStartInput" type="text" inputmode="numeric" maxlength="19"
+                               placeholder="yyyy-MM-dd HH:mm:ss" autocomplete="off">
+                    </label>
+                    <label class="logs-time-field">
+                        结束时间
+                        <input id="logsEndInput" type="text" inputmode="numeric" maxlength="19"
+                               placeholder="yyyy-MM-dd HH:mm:ss" autocomplete="off">
+                    </label>
+                    <label class="logs-keyword-field">
+                        关键字
+                        <input id="logsKeywordInput" type="search" placeholder="搜索节点、输入、输出或错误">
+                    </label>
+                    <button class="primary-button" type="submit">查询</button>
+                </form>
+            </div>
+            <div class="logs-table-shell">
+                <table class="logs-table">
+                    <thead>
+                        <tr>
+                            <th>开始时间</th>
+                            <th>状态</th>
+                            <th>执行编号</th>
+                            <th>节点执行</th>
+                            <th>结果信息</th>
+                            <th>耗时</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logsTableBody"></tbody>
+                </table>
+                <div id="logsEmpty" class="logs-empty" hidden>暂无执行记录</div>
+            </div>
+        </section>
+    </div>
+
+    <dialog id="systemVariablesDialog" class="designer-dialog">
+        <form method="dialog">
+            <div class="dialog-header">
+                <h2>系统变量</h2>
+                <button id="closeVariablesDialogButton" type="button" aria-label="关闭">×</button>
+            </div>
+            <div id="systemVariablesList" class="system-variable-list"></div>
+        </form>
+    </dialog>
+
+    <dialog id="manualFieldDialog" class="manual-field-dialog">
+        <form id="manualFieldForm">
+            <div class="dialog-header">
+                <h2 id="manualFieldDialogTitle">&#26032;&#22686;&#21464;&#37327;</h2>
+                <button id="closeManualFieldDialogButton" type="button" aria-label="&#20851;&#38381;">×</button>
+            </div>
+            <div class="manual-field-dialog-body">
+                <section class="manual-field-types" aria-label="&#36755;&#20837;&#31867;&#22411;">
+                    <h3>&#36755;&#20837;&#31867;&#22411;</h3>
+                    <div id="manualFieldTypeList" class="manual-field-type-list"></div>
+                </section>
+                <section class="manual-field-editor" aria-label="&#36755;&#20837;&#37197;&#32622;">
+                    <label>
+                        &#21464;&#37327;&#21517;&#31216;
+                        <input id="manualFieldNameInput" type="text" required placeholder="&#20363;&#22914;&#65306;orderNo">
+                    </label>
+                    <label>
+                        &#26631;&#39064;
+                        <input id="manualFieldLabelInput" type="text" placeholder="&#21487;&#36873;&#65292;&#40664;&#35748;&#20351;&#29992;&#21464;&#37327;&#21517;&#31216;">
+                    </label>
+                    <label>
+                        &#25551;&#36848;
+                        <textarea id="manualFieldDescriptionInput" rows="2" placeholder="&#25551;&#36848;&#35813;&#21464;&#37327;&#30340;&#29992;&#36884;&#65292;&#36816;&#34892;&#26102;&#40736;&#26631;&#31227;&#21040;&#26631;&#39064;&#19978;&#26174;&#31034;"></textarea>
+                    </label>
+                    <label>
+                        &#36873;&#39033;
+                        <textarea id="manualFieldOptionsInput" rows="3" placeholder="&#21333;&#36873;&#12289;&#22810;&#36873;&#25110;&#19979;&#25289;&#21015;&#34920;&#20351;&#29992;&#65292;&#27599;&#34892;&#19968;&#20010;&#36873;&#39033;"></textarea>
+                    </label>
+                    <label class="toggle-field">
+                        <input id="manualFieldRequiredInput" type="checkbox">
+                        <span>&#24517;&#22635;</span>
+                    </label>
+                    <label id="manualFieldDateOnlyField" class="toggle-field" hidden>
+                        <input id="manualFieldDateOnlyInput" type="checkbox">
+                        <span>&#20165;&#26174;&#31034;&#26085;&#26399;</span>
+                    </label>
+                    <label>
+                        &#40664;&#35748;&#20540;
+                        <input id="manualFieldDefaultInput" type="text" placeholder="&#21487;&#36873;&#65292;&#36816;&#34892;&#26102;&#40664;&#35748;&#22635;&#20837;&#30340;&#20540;">
+                    </label>
+                </section>
+            </div>
+            <div class="dialog-actions">
+                <button id="cancelManualFieldButton" class="secondary-button" type="button">&#21462;&#28040;</button>
+                <button id="confirmManualFieldButton" class="primary-button" type="submit">&#20445;&#23384;</button>
+            </div>
+        </form>
+    </dialog>
+
+    <div id="canvasContextMenu" class="canvas-context-menu" hidden>
+        <button id="contextFitButton" type="button">居中视图</button>
+        <button id="contextDeleteButton" class="danger" type="button">删除选中</button>
+    </div>
+    <div id="designerToast" class="designer-toast" role="status" aria-live="polite" hidden></div>
+
+    <script src="/designer.js?v=31"></script>
+</body>
+</html>
+

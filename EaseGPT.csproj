@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Authors>EaseGPT contributors</Authors>
+    <Copyright>Copyright 2026 EaseGPT contributors</Copyright>
+    <Description>Build knowledge bases, conversational agents, and AI workflows with .NET.</Description>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <UserSecretsId>EaseGPT-LocalDevelopment</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Cronos" Version="0.13.0" />
+    <PackageReference Include="JiebaNet.Segmenter" Version="1.0.6" />
+    <PackageReference Include="LiteDB" Version="5.0.21" />
+    <PackageReference Include="LanceDB" Version="2.4.1" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.1" />
+    <PackageReference Include="MySqlConnector" Version="2.6.0" />
+    <!-- JiebaNet.Segmenter requests vulnerable Newtonsoft.Json 11.0.2; pin a compatible secure version. -->
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="Npgsql" Version="10.0.3" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Temporary diagnostics are runtime artifacts and must never be compiled or published. -->
+    <Compile Remove="TmpDiagnostics\**\*" />
+    <Content Remove="TmpDiagnostics\**\*" />
+    <EmbeddedResource Remove="TmpDiagnostics\**\*" />
+    <None Remove="TmpDiagnostics\**\*" />
+
+    <!-- Runtime databases, uploads, and vector data must never enter build artifacts. -->
+    <Content Remove="Data\**\*" />
+    <None Remove="Data\**\*" />
+    <None Include="Data\model-metadata.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

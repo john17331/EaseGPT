@@ -1,0 +1,52 @@
+[
+  {
+    "pattern": "text-embedding",
+    "modelType": "text-embedding",
+    "capabilities": []
+  },
+  {
+    "pattern": "embedding",
+    "modelType": "text-embedding",
+    "capabilities": []
+  },
+  {
+    "pattern": "rerank",
+    "modelType": "rerank",
+    "capabilities": []
+  },
+  {
+    "pattern": "whisper",
+    "modelType": "speech2text",
+    "capabilities": []
+  },
+  {
+    "pattern": "speech2text",
+    "modelType": "speech2text",
+    "capabilities": []
+  },
+  {
+    "pattern": "tts",
+    "modelType": "tts",
+    "capabilities": []
+  },
+  {
+    "pattern": "qwen-vl",
+    "modelType": "llm",
+    "capabilities": ["vision"]
+  },
+  {
+    "pattern": "gpt-4o",
+    "modelType": "llm",
+    "capabilities": ["vision"]
+  },
+  {
+    "pattern": "gemini",
+    "modelType": "llm",
+    "capabilities": ["vision"]
+  },
+  {
+    "pattern": "video",
+    "modelType": "llm",
+    "capabilities": ["video"]
+  }
+]

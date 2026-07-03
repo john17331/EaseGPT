@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>知识库管理 · EaseGPT创作中心</title>
+    <link rel="stylesheet" href="/knowledge.css?v=6">
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <div class="brand-header">
+                <div class="admin-brand" aria-label="EaseGPT 创作">
+                    <img class="brand-logo" src="/assets/easegpt.svg" alt="">
+                    <span class="brand-copy">
+                        <strong>EaseGPT 创作</strong>
+                        <span>企业级 AI 应用平台</span>
+                    </span>
+                </div>
+            </div>
+            <nav class="knowledge-nav" aria-label="知识库功能">
+                <button class="knowledge-nav-item active" type="button" data-knowledge-view="create">
+                    <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M8 6C8 4.89543 8.89543 4 10 4H30L40 14V42C40 43.1046 39.1046 44 38 44H10C8.89543 44 8 43.1046 8 42V6Z"/><path d="M16 20H32"/><path d="M16 28H32"/></svg>
+                    <span>文档管理</span>
+                </button>
+                <button class="knowledge-nav-item" type="button" data-knowledge-view="test">
+                    <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M21.4172 18.5828C19.3962 19.5481 18 21.6109 18 23.9999C18 27.3136 20.6863 29.9999 24 29.9999C26.389 29.9999 28.4519 28.6037 29.4172 26.5828"/><path d="M28.2793 11.7207C26.9392 11.2538 25.4992 11 24 11C16.8203 11 11 16.8203 11 24C11 31.1797 16.8203 37 24 37C31.1797 37 37 31.1797 37 24C37 22.5008 36.7462 21.0608 36.2793 19.7207"/><path d="M33.5675 6.43255C30.7255 4.88151 27.4657 4 24 4C12.9543 4 4 12.9543 4 24C4 35.0457 12.9543 44 24 44C35.0457 44 44 35.0457 44 24C44 20.5343 43.1185 17.2745 41.5675 14.4325"/><path d="M44 4L24 24"/></svg>
+                    <span>召回测试</span>
+                </button>
+            </nav>
+        </aside>
+
+        <main class="main">
+            <header class="topbar">
+                <button id="mobileMenuButton" class="mobile-menu" type="button" aria-label="打开知识库菜单">☰</button>
+                <span class="topbar-knowledge-icon" aria-hidden="true">
+                    <img src="/assets/knowledge.svg" alt="">
+                </span>
+                <div>
+                    <h1 id="pageTitle">知识库管理</h1>
+                    <p id="pageDescription">选择或创建一个知识库开始使用</p>
+                </div>
+            </header>
+
+            <div id="emptyState" class="empty-state">
+                <div class="empty-icon">📌</div>
+                <h2>把资料变成可检索的知识</h2>
+                <p>创建知识库，上传文档，然后直接测试问答与引用命中。</p>
+                <button id="emptyCreateButton" class="primary-button" type="button">创建第一个知识库</button>
+            </div>
+
+            <div id="workspace" class="workspace" hidden>
+                <div id="fileWorkspace" class="file-workspace">
+                    <section id="createSection" class="card settings-card">
+                        <div class="card-header settings-heading">
+                            <div>
+                                <h2>分段与检索</h2>
+                                <p>已采用推荐配置，通常无需修改</p>
+                            </div>
+                            <div class="settings-summary" aria-label="当前知识库配置">
+                                <span id="chunkSummary">按段落 · 1024</span>
+                                <span id="indexSummary">混合检索</span>
+                                <span id="rerankSummary">不使用重排</span>
+                            </div>
+                        </div>
+                        <details class="advanced-settings">
+                            <summary>高级设置</summary>
+                            <form id="knowledgeSettingsForm" class="settings-form">
+                                <div class="setting-group">
+                                    <div class="setting-title">
+                                        <strong>分段设置</strong>
+                                        <span>推荐按自然段落切分，兼顾语义完整性与召回精度。</span>
+                                    </div>
+                                    <div class="sub-setting-block">
+                                        <label class="sub-setting-label">分段方式</label>
+                                        <div class="option-card-grid two-columns" data-option-group="chunkModeSelect">
+                                            <button class="option-card" type="button" data-select-target="chunkModeSelect" data-value="paragraph">
+                                                <strong>按段落</strong>
+                                                <span>适合大多数文档内容，语义更完整</span>
+                                            </button>
+                                            <button class="option-card" type="button" data-select-target="chunkModeSelect" data-value="fixed">
+                                                <strong>固定长度</strong>
+                                                <span>按固定字符数切分，结构更稳定</span>
+                                            </button>
+                                        </div>
+                                        <select id="chunkModeSelect" class="native-hidden">
+                                            <option value="paragraph">按段落（推荐）</option>
+                                            <option value="fixed">固定长度</option>
+                                        </select>
+                                    </div>
+                                    <div class="setting-grid three-columns inline-setting-grid">
+                                        <label>分段标识符
+                                            <input id="chunkDelimiterInput" type="text" value="\n\n" spellcheck="false">
+                                        </label>
+                                        <label>最大长度
+                                            <div class="number-field"><input id="chunkSizeInput" type="number" min="200" max="4000" step="1" value="1024"><span>字符</span></div>
+                                        </label>
+                                        <label>重叠长度
+                                            <div class="number-field"><input id="chunkOverlapInput" type="number" min="0" max="1000" step="20" value="100"><span>字符</span></div>
+                                        </label>
+                                    </div>
+                                    <p id="chunkSettingsHint" class="chunk-settings-hint"></p>
+                                </div>
+
+                                <div class="setting-group">
+                                    <div class="setting-title">
+                                        <strong>索引与模型</strong>
+                                        <span>混合检索同时利用语义和关键词，可选系统中已配置的 Embedding / Rerank 模型进一步优化效果。</span>
+                                    </div>
+                                    <div class="sub-setting-block">
+                                        <label class="sub-setting-label">索引方式</label>
+                                        <div class="option-card-grid three-option-columns" data-option-group="indexModeSelect">
+                                            <button class="option-card" type="button" data-select-target="indexModeSelect" data-value="hybrid">
+                                                <strong>混合检索</strong>
+                                                <span>语义与关键词结合，综合效果更均衡</span>
+                                            </button>
+                                            <button class="option-card" type="button" data-select-target="indexModeSelect" data-value="vector">
+                                                <strong>向量检索</strong>
+                                                <span>更偏语义理解，适合自然语言问题</span>
+                                            </button>
+                                            <button class="option-card" type="button" data-select-target="indexModeSelect" data-value="full-text">
+                                                <strong>全文检索</strong>
+                                                <span>更偏关键词匹配，适合精确定位内容</span>
+                                            </button>
+                                        </div>
+                                        <select id="indexModeSelect" class="native-hidden">
+                                            <option value="hybrid">混合检索（推荐）</option>
+                                            <option value="vector">向量检索</option>
+                                            <option value="full-text">全文检索</option>
+                                        </select>
+                                    </div>
+                                    <div class="setting-grid two-column-settings">
+                                        <label>Embedding 模型
+                                            <div id="embeddingModelPicker" class="floating-model-picker"></div>
+                                            <select id="embeddingModelSelect" class="native-hidden">
+                                                <option value="system-default">系统默认</option>
+                                            </select>
+                                        </label>
+                                        <label>Rerank 模型
+                                            <div id="rerankModelPicker" class="floating-model-picker"></div>
+                                            <select id="rerankModelSelect" class="native-hidden">
+                                                <option value="none">不使用重排</option>
+                                            </select>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="settings-actions">
+                                    <span>修改后，已有文档将自动重新分段并建立索引。</span>
+                                    <button id="saveKnowledgeSettingsButton" class="primary-button" type="submit">保存设置</button>
+                                </div>
+                            </form>
+                        </details>
+                    </section>
+
+                    <section class="card documents-card">
+                        <div class="card-header">
+                            <div>
+                                <h2>文档</h2>
+                                <p id="documentSummary">暂无文档。</p>
+                            </div>
+                            <label class="upload-button" for="fileInput"><img class="button-icon" src="/assets/upload.svg" alt="">上传文件</label>
+                            <input id="fileInput" type="file" multiple accept=".txt,.md,.markdown,.csv,.json,.xml,.yaml,.yml,.html,.htm,.docx,text/*">
+                        </div>
+
+                        <label id="dropZone" class="drop-zone" for="fileInput">
+                            <span class="drop-icon"><img src="/assets/upload.svg" alt=""></span>
+                            <strong>拖放文件到这里</strong>
+                            <span>支持 TXT、Markdown、CSV、JSON、XML、HTML、DOCX，单文件最大 100 MB</span>
+                        </label>
+
+                        <div id="uploadQueue" class="upload-queue"></div>
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr><th>文件</th><th>状态</th><th>分段</th><th>大小</th><th>上传时间</th><th></th></tr>
+                                </thead>
+                                <tbody id="documentList"></tbody>
+                            </table>
+                            <div id="documentEmpty" class="list-empty">还没有文档，上传一份资料试试。</div>
+                        </div>
+                    </section>
+                </div>
+
+                <section id="previewSection" class="card ask-card">
+                    <div class="card-header">
+                        <div>
+                            <h2>分段预览</h2>
+                            <p id="previewDescription">查看文件的分段数量、状态与前 10 段内容</p>
+                        </div>
+                    </div>
+                    <div id="previewEmpty" class="answer-empty">选择左侧文件后，这里会显示分段统计和预览</div>
+                    <article id="previewPanel" class="answer-panel" hidden>
+                        <div class="preview-stats">
+                            <div class="preview-stat"><span>文件状态</span><strong id="previewStatus">-</strong></div>
+                            <div class="preview-stat"><span>分段数量</span><strong id="previewChunkCount">0</strong></div>
+                            <div class="preview-stat"><span>文件大小</span><strong id="previewSize">0 B</strong></div>
+                            <div class="preview-stat"><span>更新时间</span><strong id="previewUpdatedAt">-</strong></div>
+                        </div>
+                        <div class="citation-heading">前 10 段预览</div>
+                        <div id="chunkPreviewList" class="chunk-preview-list"></div>
+                    </article>
+                </section>
+
+                <section id="testSection" class="card test-card" hidden>
+                    <div class="card-header">
+                        <div>
+                            <h2>召回测试</h2>
+                            <p>只查看命中的分段与分数，不生成答案</p>
+                        </div>
+                    </div>
+                    <div class="test-layout">
+                        <form id="askForm" class="ask-form test-form-panel">
+                            <textarea id="questionInput" rows="6" placeholder="输入一个关于已上传资料的问题..." required></textarea>
+                            <div class="ask-actions">
+                                <label>召回数量 <select id="topKSelect"><option>3</option><option selected>5</option><option>8</option></select></label>
+                                <button id="askButton" class="primary-button" type="submit">开始提问</button>
+                            </div>
+                        </form>
+                        <div class="test-result-panel">
+                            <div id="answerEmpty" class="answer-empty">命中的分段、关键词和分数将会在这里显示</div>
+                            <article id="answerPanel" class="answer-panel" hidden>
+                                <div class="answer-label-row">
+                                    <div class="answer-label">召回结果</div>
+                                    <div id="recallCount" class="recall-count"></div>
+                                </div>
+                                <div id="citationList" class="citation-list"></div>
+                            </article>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <dialog id="baseDialog">
+        <form id="baseForm">
+            <div class="dialog-header"><h2 id="dialogTitle">新建知识库</h2><button id="closeDialogButton" type="button" aria-label="关闭">×</button></div>
+            <label>名称<input id="baseNameInput" maxlength="100" required placeholder="例如：产品使用手册"></label>
+            <label>描述<textarea id="baseDescriptionInput" rows="4" maxlength="500" placeholder="简要说明知识库的内容与用途（可选）"></textarea></label>
+            <div class="dialog-actions"><button id="cancelDialogButton" class="ghost-button" type="button">取消</button><button class="primary-button" type="submit">保存</button></div>
+        </form>
+    </dialog>
+
+    <dialog id="documentErrorDialog">
+        <form method="dialog" class="document-error-form">
+            <div class="dialog-header"><h2>处理失败详情</h2><button id="closeDocumentErrorButton" type="button" aria-label="关闭">×</button></div>
+            <div id="documentErrorMessage" class="document-error-message"></div>
+            <div class="dialog-actions"><button class="primary-button" type="submit">知道了</button></div>
+        </form>
+    </dialog>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="/knowledge.js?v=11"></script>
+</body>
+</html>

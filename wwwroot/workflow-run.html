@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>EaseGPT 工作流运行测试</title>
+    <link rel="stylesheet" href="/styles.css?v=16">
+</head>
+<body class="workflow-run-page">
+    <main id="workflowRunShell" class="workflow-run-shell" data-layout="side">
+        <header class="workflow-run-header">
+            <div class="workflow-run-identity">
+                <span id="workflowIcon" class="workflow-run-icon"></span>
+                <span class="workflow-run-heading">
+                    <strong id="workflowName">正在加载工作流...</strong>
+                    <small id="workflowDescription">请稍候</small>
+                </span>
+            </div>
+
+            <div class="workflow-layout-control">
+                <button id="layoutMenuButton" class="workflow-layout-button" type="button"
+                        aria-label="切换页面布局" aria-haspopup="menu" aria-expanded="false">
+                    <img src="/assets/settingconfig.svg" alt="">
+                </button>
+                <div id="layoutMenu" class="workflow-layout-menu" role="menu" hidden>
+                    <button type="button" role="menuitemradio" data-layout-value="side" aria-checked="true">
+                        <img src="/assets/leftbar.svg" alt="">
+                        <span>左右布局</span>
+                    </button>
+                    <button type="button" role="menuitemradio" data-layout-value="top" aria-checked="false">
+                        <img src="/assets/topbar.svg" alt="">
+                        <span>上下布局</span>
+                    </button>
+                    <button type="button" role="menuitemradio" data-layout-value="center" aria-checked="false">
+                        <img src="/assets/margin.svg" alt="">
+                        <span>居中布局</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <section class="workflow-run-form-panel" aria-label="工作流输入">
+            <div class="workflow-run-fields">
+                <section id="manualInputSection" class="workflow-run-section">
+                    <div id="manualInputFields" class="manual-input-fields"></div>
+                </section>
+
+                <section id="defaultInputSection" class="workflow-run-section">
+                    <div id="fileList" class="file-list default-chat-file-list"></div>
+                    <div class="workflow-chat-composer">
+                        <button id="attachmentButton" class="workflow-chat-attachment" type="button"
+                                aria-label="选择文件" title="选择文件">
+                            <span aria-hidden="true">+</span>
+                        </button>
+                        <textarea id="questionInput" rows="1" aria-label="工作流输入"
+                                  placeholder="给工作流发送消息"></textarea>
+                        <span id="defaultComposerAction" class="workflow-chat-action"></span>
+                    </div>
+                    <input id="fileInput" class="workflow-chat-file-input" type="file" multiple
+                           accept="image/*,.txt,.md,.json,.csv,.log,text/*,application/json">
+                    <p id="defaultInputStatus" class="workflow-chat-status">准备就绪</p>
+                </section>
+
+                <button id="executeButton" class="primary-button workflow-run-submit" type="button">运行测试</button>
+            </div>
+        </section>
+
+        <section id="workflowRunResultPanel" class="workflow-run-result-panel" aria-label="执行结果">
+            <button id="resultBackdrop" class="workflow-result-backdrop" type="button" aria-label="关闭测试结果"></button>
+            <div id="workflowRunBrand" class="workflow-run-brand">
+                <strong id="workflowRunBrandMessage">你的 AI，准备好了。「运行测试」，即可开始体验。</strong>
+                <span>Power by EaseGPT</span>
+            </div>
+
+            <div id="resultPanel" class="workflow-run-result" hidden>
+                <div class="result-header">
+                    <div>
+                        <h2 id="resultTitle">测试结果</h2>
+                        <span id="executionSummary">暂无运行结果</span>
+                    </div>
+                </div>
+                <div id="resultList" class="result-list"></div>
+            </div>
+        </section>
+    </main>
+
+    <script src="/sse-client.js?v=1"></script>
+    <script src="/app.js?v=14"></script>
+</body>
+</html>
