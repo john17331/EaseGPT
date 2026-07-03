@@ -17,22 +17,6 @@
 
 ## 5 分钟快速部署
 
-<p align="center">
-  <a href="./EaseGPTSetup.mp4">
-    <img src="https://img.shields.io/badge/%E2%96%B6%20Watch-EaseGPT%20Setup%20Video-red?style=for-the-badge" alt="Watch EaseGPT Setup Video" />
-  </a>
-</p>
-
-<p align="center">
-  <a href="./EaseGPTSetup.mp4">
-    <img src="wwwroot/assets/pic/1.png" alt="点击观看 EaseGPT 安装演示视频" width="100%">
-  </a>
-</p>
-
-<p align="center">
-  <a href="./EaseGPTSetup.mp4">点击观看 EaseGPTSetup.mp4</a>
-</p>
-
 ### 1. 下载并解压
 
 1. 打开项目 GitHub 页面的 **Releases**。
