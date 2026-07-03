@@ -19,6 +19,12 @@
 
 <p align="center">
   <a href="./EaseGPTSetup.mp4">
+    <img src="https://img.shields.io/badge/%E2%96%B6%20Watch-EaseGPT%20Setup%20Video-red?style=for-the-badge" alt="Watch EaseGPT Setup Video" />
+  </a>
+</p>
+
+<p align="center">
+  <a href="./EaseGPTSetup.mp4">
     <img src="wwwroot/assets/pic/1.png" alt="点击观看 EaseGPT 安装演示视频" width="100%">
   </a>
 </p>
