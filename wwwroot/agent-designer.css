@@ -370,12 +370,58 @@ body {
 .agent-profile-copy small { color: var(--muted); font-size: 12px; }
 
 .config-scroll {
+    display: flex;
+    flex-direction: column;
     height: 100%;
     overflow-y: auto;
     padding: 14px 28px 42px;
+    gap: 0;
 }
 
-.config-section { display: contents; }
+.config-section {
+    display: block;
+}
+
+.config-section[data-config-section="orchestration"] {
+    order: 1;
+}
+
+.config-section[data-config-section="knowledge"] {
+    order: 2;
+}
+
+.config-section[data-config-section="tools"] {
+    order: 3;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 12px;
+    align-items: start;
+}
+
+.config-section[data-config-section="tools"] .agent-tool-heading,
+.config-section[data-config-section="tools"] #agentToolList {
+    grid-column: 1 / -1;
+}
+
+.config-section[data-config-section="tools"] > .field:first-of-type {
+    order: 3;
+}
+
+.config-section[data-config-section="tools"] > .field:nth-of-type(2) {
+    order: 4;
+}
+
+.config-section[data-config-section="tools"] .agent-tool-heading {
+    order: 1;
+}
+
+.config-section[data-config-section="tools"] #agentToolList {
+    order: 2;
+}
+
+.config-section[data-config-section="tools"] > .field {
+    margin-bottom: 0;
+}
 
 .config-scroll .field {
     width: 100%;
@@ -924,6 +970,7 @@ body {
     .logs-filter-form { grid-template-columns: 1fr; }
     .logs-keyword-field { min-width: 0; }
     .logs-time-field { width: auto; }
+    .config-section[data-config-section="tools"] { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 620px) {
@@ -937,4 +984,518 @@ body {
         margin-top: 10px;
     }
     .config-scroll { padding: 12px 18px 40px; }
+}
+
+.agent-tool-heading,
+.manual-field-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 14px 0 10px;
+    font-size: 13px;
+}
+
+.agent-tool-heading strong {
+    font-size: 14px;
+    color: #111827;
+}
+
+.agent-tool-picker-anchor {
+    position: relative;
+}
+
+.agent-tool-list {
+    display: grid;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.agent-selection-empty {
+    padding: 12px;
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+    color: var(--muted);
+    font-size: 13px;
+    background: #fbfcfe;
+}
+
+.agent-tool-card {
+    display: grid;
+    gap: 10px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: #fcfdff;
+}
+
+.agent-tool-card-main {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.agent-tool-card-icon,
+.agent-tool-picker-icon {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    flex: 0 0 30px;
+    border-radius: 7px;
+    background: #e6f7ff;
+    color: #1677ff;
+}
+
+.agent-tool-card-icon svg,
+.agent-tool-picker-icon svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.agent-tool-card-icon img,
+.agent-tool-picker-icon img {
+    display: block;
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+}
+
+.agent-tool-card-header {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.agent-tool-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex: 0 0 auto;
+}
+
+.agent-tool-card-copy {
+    min-width: 0;
+    display: grid;
+    gap: 4px;
+}
+
+.agent-tool-card-copy strong {
+    font-size: 13px;
+    color: #111827;
+}
+
+.agent-tool-card-copy small {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.agent-tool-card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.agent-tool-card-tags span {
+    padding: 4px 10px;
+    border: 1px solid #dbe6f5;
+    border-radius: 999px;
+    background: #fff;
+    color: #475467;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.agent-tool-picker {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 2000;
+    display: grid;
+    width: 420px;
+    gap: 10px;
+    padding: 12px;
+    border: 1px solid #dce5f2;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 18px 44px rgba(15, 23, 42, .14);
+}
+
+.agent-tool-picker-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #e6edf7;
+    border-radius: 12px;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    color: #1f2937;
+    text-align: left;
+}
+
+.agent-tool-picker-option:hover {
+    border-color: #bcd3ff;
+    box-shadow: 0 0 0 3px rgba(22, 119, 255, .08);
+}
+
+.agent-tool-picker-copy {
+    display: grid;
+    gap: 4px;
+}
+
+.agent-tool-picker-copy strong {
+    font-size: 14px;
+}
+
+.agent-tool-picker-copy small {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.manual-field-action-button {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: #475467;
+    cursor: pointer;
+}
+
+.manual-field-action-button:hover {
+    background: #f2f4f7;
+    color: #1677ff;
+}
+
+.manual-field-action-button.delete:hover {
+    background: #fff1f0;
+}
+
+.manual-field-action-button svg,
+.manual-field-action-button img {
+    display: block;
+    width: 14px;
+    height: 14px;
+    object-fit: contain;
+}
+
+.manual-field-action-button svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.agent-tool-dialog {
+    width: min(1080px, calc(100vw - 40px));
+    border: 1px solid rgba(226, 232, 240, .95);
+    border-radius: 16px;
+    padding: 0;
+    overflow: hidden;
+    box-shadow: 0 26px 90px rgba(15, 23, 42, .24);
+}
+
+.agent-tool-dialog::backdrop {
+    background: rgba(15, 23, 42, .35);
+}
+
+.agent-tool-dialog form {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    height: min(760px, calc(100vh - 44px));
+    background: #fff;
+}
+
+.agent-tool-dialog .dialog-header {
+    min-height: 68px;
+    margin: 0;
+    padding: 0 28px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, #fff 0%, #fbfdff 100%);
+}
+
+.dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.dialog-header h2 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.dialog-header button {
+    width: 32px;
+    height: 32px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #737983;
+    cursor: pointer;
+    font-size: 22px;
+}
+
+.dialog-header button:hover {
+    background: #f2f2f2;
+    color: var(--text);
+}
+
+.agent-tool-dialog-body {
+    display: grid;
+    grid-template-columns: minmax(320px, .92fr) minmax(440px, 1.08fr);
+    min-height: 0;
+}
+
+.agent-tool-dialog-main,
+.agent-tool-dialog-side {
+    min-height: 0;
+    overflow: auto;
+    padding: 28px;
+}
+
+.agent-tool-dialog-main {
+    border-right: 1px solid var(--border);
+}
+
+.agent-tool-dialog-main label,
+.agent-tool-dialog-side label {
+    display: grid;
+    gap: 9px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    font-weight: 650;
+}
+
+.agent-tool-dialog input,
+.agent-tool-dialog textarea,
+.agent-tool-dialog select {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: #fff;
+    color: var(--text);
+    font: inherit;
+    font-size: 13px;
+    padding: 10px 11px;
+}
+
+.agent-tool-dialog select,
+.agent-tool-dialog input[type=number],
+.agent-tool-dialog input[type=text],
+.agent-tool-dialog input[type=password] {
+    min-height: 42px;
+}
+
+.agent-tool-dialog textarea {
+    min-height: 148px;
+    resize: vertical;
+    font-family: inherit;
+    line-height: 1.6;
+}
+
+.agent-tool-dialog input:focus,
+.agent-tool-dialog textarea:focus,
+.agent-tool-dialog select:focus {
+    outline: 0;
+    border-color: #91caff;
+    box-shadow: 0 0 0 3px rgba(22,119,255,.08);
+}
+
+.agent-tool-type-fields {
+    display: grid;
+    gap: 16px;
+}
+
+.agent-tool-config-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.database-connection-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 94px;
+    gap: 9px;
+}
+
+.toggle-field {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-height: 38px;
+    cursor: pointer;
+}
+
+.toggle-field input {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    min-height: 16px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    background: transparent;
+    accent-color: #1677ff;
+}
+
+.database-parameter-list {
+    display: grid;
+    gap: 9px;
+    margin-bottom: 14px;
+}
+
+.database-parameter-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 90px 30px;
+    gap: 7px;
+    padding: 9px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fafafa;
+}
+
+.database-parameter-item input,
+.database-parameter-item select {
+    min-width: 0;
+    padding: 8px;
+    font-size: 12px;
+}
+
+.database-parameter-value {
+    grid-column: 1 / -1;
+}
+
+.http-key-value-list {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.http-key-value-item {
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr) 30px;
+    gap: 7px;
+    align-items: center;
+}
+
+.http-key-value-item input {
+    min-width: 0;
+    padding: 8px;
+    font-size: 12px;
+}
+
+.http-number-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.classifier-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 2px 0 10px;
+    font-size: 13px;
+}
+
+.empty-state {
+    padding: 10px 0;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.file-delete-button {
+    width: 28px;
+    height: 28px;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: #ff4d4f;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+.file-delete-button:hover {
+    background: #fdecec;
+}
+
+.agent-tool-dialog .dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 28px;
+    border-top: 1px solid var(--border);
+    background: #fff;
+}
+
+.agent-tool-dialog .dialog-actions .primary-button,
+.agent-tool-dialog .dialog-actions .secondary-button {
+    width: auto;
+    min-width: 84px;
+    min-height: 36px;
+    padding: 0 18px;
+}
+
+.icon-add-button {
+    display: inline-grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    flex: 0 0 30px;
+    border: 1px solid #91d5ff;
+    border-radius: 7px;
+    padding: 0;
+    background: #e6f7ff;
+    color: #1677ff;
+    font: inherit;
+    font-size: 21px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.icon-add-button:hover,
+.icon-add-button.is-open {
+    border-color: #1677ff;
+    background: #bae7ff;
+}
+
+.field-hint {
+    margin: 0 0 14px;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.danger-button {
+    color: #ff4d4f;
+}
+
+@media (max-width: 780px) {
+    .agent-tool-dialog-body {
+        grid-template-columns: 1fr;
+    }
+
+    .agent-tool-dialog-main {
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+    }
 }

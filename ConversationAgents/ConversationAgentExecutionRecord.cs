@@ -16,6 +16,8 @@ public sealed class ConversationAgentExecutionRecord
 
     public string? Error { get; set; }
 
+    public string? ExecutionMode { get; set; }
+
     public string Status { get; set; } = "Completed";
 
     public long ElapsedMilliseconds { get; set; }

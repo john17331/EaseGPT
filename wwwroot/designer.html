@@ -1,10 +1,10 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="zh-CN">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>EaseGPT 工作流设计器</title>
-    <link rel="stylesheet" href="/designer.css?v=31">
+    <link rel="stylesheet" href="/designer.css?v=40">
 </head>
 <body>
     <div class="designer-shell">
@@ -168,10 +168,47 @@
                     </div>
                 </div>
 
+                <div id="currentTimeSettingsPanel" hidden>
+                    <label>
+                        &#26102;&#38388;&#22522;&#20934;
+                        <select id="currentTimeModeSelect">
+                            <option value="local">&#26412;&#22320;&#26102;&#38388;</option>
+                            <option value="utc">UTC</option>
+                            <option value="custom">&#25351;&#23450;&#26102;&#21306;</option>
+                        </select>
+                    </label>
+                    <label id="currentTimeTimeZoneField">
+                        &#26102;&#21306; ID
+                        <input id="currentTimeTimeZoneInput" type="text" placeholder="&#20363;&#22914;&#65306;Asia/Shanghai &#25110; China Standard Time">
+                    </label>
+                    <label>
+                        &#36755;&#20986;&#26684;&#24335;
+                        <input id="currentTimeFormatInput" type="text" placeholder="yyyy-MM-dd HH:mm:ss zzz">
+                    </label>
+                    <p class="field-hint">&#35813;&#33410;&#28857;&#20250;&#36820;&#22238;&#26684;&#24335;&#21270;&#26102;&#38388;&#12289;ISO &#26102;&#38388;&#12289;UTC &#26102;&#38388;&#12289;&#26102;&#21306; ID &#21644; Unix &#26102;&#38388;&#25139;&#12290;&#25351;&#23450;&#26102;&#21306;&#26102;&#25903;&#25345;&#24120;&#35265; IANA/Windows &#26102;&#21306;&#21517;&#31216;&#12290;</p>
+                </div>
+
+                <div id="forEachSettingsPanel" hidden>
+                    <label>
+                        数组变量
+                        <input id="forEachItemsVariableInput" type="text" placeholder="例如：orders、rows、input.items">
+                    </label>
+                    <label>
+                        当前项变量名
+                        <input id="forEachItemVariableInput" type="text" placeholder="例如：currentItem">
+                    </label>
+                    <label>
+                        索引变量名
+                        <input id="forEachIndexVariableInput" type="text" placeholder="例如：currentIndex">
+                    </label>
+                    <p class="field-hint">节点会遍历数组，并为下游每次执行注入当前项和索引。例如可在下游使用 {{currentItem.textBody}}、{{currentIndex}}。</p>
+                </div>
+
                 <div id="classifierSettingsPanel" hidden>
                     <label>
                         &#22823;&#27169;&#22411;&#37197;&#32622;
-                        <select id="classifierProviderConfigSelect"></select>
+                        <div id="classifierProviderConfigPicker" class="floating-model-picker"></div>
+                        <select id="classifierProviderConfigSelect" class="native-hidden"></select>
                     </label>
                     <label>
                         &#24453;&#20998;&#31867;&#20869;&#23481;
@@ -264,6 +301,81 @@
                         </label>
                     </div>
                     <p class="field-hint">URL&#12289;&#35831;&#27714;&#22836;&#21644;&#35831;&#27714;&#20307;&#22343;&#25903;&#25345;&#20351;&#29992; {{&#21464;&#37327;&#21517;}}&#12290;&#20165;&#32593;&#32476;&#38169;&#35823;&#12289;&#36229;&#26102;&#12289;408&#12289;429 &#21644; 5xx &#21709;&#24212;&#20250;&#37325;&#35797;&#12290;</p>
+                </div>
+
+                <div id="mailReadSettingsPanel" hidden>
+                    <label>
+                        协议
+                        <select id="mailProtocolSelect">
+                            <option value="imap">IMAP</option>
+                            <option value="pop3">POP3</option>
+                        </select>
+                    </label>
+                    <div class="database-connection-grid">
+                        <label>
+                            邮件服务器地址
+                            <input id="mailHostInput" type="text" placeholder="imap.example.com">
+                        </label>
+                        <label>
+                            端口
+                            <input id="mailPortInput" type="number" min="1" max="65535" step="1">
+                        </label>
+                    </div>
+                    <label>
+                        安全模式
+                        <select id="mailSecuritySelect">
+                            <option value="ssl">SSL/TLS</option>
+                            <option value="starttls">STARTTLS</option>
+                            <option value="none">无加密</option>
+                        </select>
+                    </label>
+                    <label>
+                        邮箱账号
+                        <input id="mailUsernameInput" type="text" autocomplete="off" placeholder="user@example.com">
+                    </label>
+                    <label>
+                        邮箱密码
+                        <input id="mailPasswordInput" type="password" autocomplete="new-password">
+                    </label>
+                    <label id="mailFolderField">
+                        邮箱文件夹
+                        <input id="mailFolderInput" type="text" placeholder="INBOX">
+                    </label>
+                    <div class="http-number-grid">
+                        <label>
+                            最大邮件数
+                            <input id="mailMaxMessagesInput" type="number" min="1" max="100" step="1">
+                        </label>
+                        <label>
+                            超时时间（秒）
+                            <input id="mailTimeoutInput" type="number" min="5" max="300" step="1">
+                        </label>
+                    </div>
+                    <label>
+                        附件大小上限（字节）
+                        <input id="mailMaxAttachmentBytesInput" type="number" min="1024" max="26214400" step="1024">
+                    </label>
+                    <label class="toggle-field">
+                        <input id="mailUnreadOnlyInput" type="checkbox">
+                        <span>仅收取未读邮件</span>
+                    </label>
+                    <label class="toggle-field">
+                        <input id="mailIgnoreKnownInput" type="checkbox">
+                        <span>忽略已处理邮件（按内置指纹库）</span>
+                    </label>
+                    <label class="toggle-field">
+                        <input id="mailMarkAsReadInput" type="checkbox">
+                        <span>读取后标记为已读（仅 IMAP）</span>
+                    </label>
+                    <label id="mailPopDeleteField" class="toggle-field">
+                        <input id="mailPopDeleteInput" type="checkbox">
+                        <span>收取后删除服务器邮件（仅 POP3）</span>
+                    </label>
+                    <label class="toggle-field">
+                        <input id="mailIncludeAttachmentsInput" type="checkbox">
+                        <span>输出附件 Base64 内容</span>
+                    </label>
+                    <p class="field-hint">节点会输出 mailMessages、latestMail、latestMailText、latestMailHtml、latestMailAttachments，以及 mailFetchedCount、mailSkippedCount。系统会内置记录已处理邮件指纹；POP3 默认只收取不删除服务器邮件。</p>
                 </div>
 
                 <div id="webCrawlerSettingsPanel" hidden>
@@ -374,6 +486,41 @@
                     <p class="field-hint">&#21442;&#25968;&#20540;&#25903;&#25345; {{&#21464;&#37327;&#21517;}}&#12290;&#23494;&#30721;&#20250;&#38543;&#24037;&#20316;&#27969;&#37197;&#32622;&#20445;&#23384;&#21040; LiteDB&#65292;&#35831;&#38480;&#21046;&#25968;&#25454;&#24211;&#36134;&#21495;&#26435;&#38480;&#12290;</p>
                 </div>
 
+                <div id="agentSettingsPanel" hidden>
+                    <label>
+                        Agent &#27169;&#22411;&#37197;&#32622;
+                        <div id="agentProviderConfigPicker" class="floating-model-picker"></div>
+                        <select id="agentProviderConfigSelect" class="native-hidden"></select>
+                    </label>
+                    <label>
+                        &#29992;&#25143;&#36755;&#20837;&#27169;&#26495;
+                        <textarea id="agentMessageInput" rows="2" placeholder="{{question}}"></textarea>
+                    </label>
+                    <label>
+                        Agent &#25351;&#20196;
+                        <textarea id="agentInstructionInput" rows="5" placeholder="&#25551;&#36848; Agent &#30340;&#35282;&#33394;&#12289;&#20219;&#21153;&#12289;&#36755;&#20986;&#26684;&#24335;&#21644;&#36793;&#30028;"></textarea>
+                    </label>
+                    <div class="manual-field-heading agent-tool-heading">
+                        <strong>&#24037;&#20855;&#35774;&#32622;</strong>
+                        <div class="agent-tool-picker-anchor">
+                            <button id="addAgentToolButton" class="icon-add-button" type="button" title="&#28155;&#21152;&#24037;&#20855;" aria-label="&#28155;&#21152;&#24037;&#20855;">+</button>
+                            <div id="agentToolPicker" class="agent-tool-picker" hidden></div>
+                        </div>
+                    </div>
+                    <div id="agentToolList" class="agent-tool-list"></div>
+                    <div class="agent-tool-limits-row">
+                        <label>
+                            &#26368;&#22823;&#24037;&#20855;&#36718;&#27425;
+                            <input id="agentMaxIterationsInput" type="number" min="1" max="12" step="1">
+                        </label>
+                        <label>
+                            &#36229;&#26102;&#26102;&#38388;&#65288;&#31186;&#65289;
+                            <input id="agentTimeoutInput" type="number" min="1" max="600" step="1">
+                        </label>
+                    </div>
+                    <p class="field-hint">&#35813;&#33410;&#28857;&#20250;&#25226; Agent &#25351;&#20196;&#21644;&#8220;&#24037;&#20855;&#36793;&#30028;&#25351;&#20196;&#8221;&#19968;&#36215;&#21457;&#32473;&#27169;&#22411;&#65292;&#24182;&#22312;&#33410;&#28857;&#20869;&#37096;&#25191;&#34892;&#30495;&#23454;&#24037;&#20855;&#35843;&#29992;&#12290;</p>
+                </div>
+
                 <div id="outputSettingsPanel" hidden>
                     <label>
                         &#36755;&#20986;&#21464;&#37327;
@@ -441,7 +588,7 @@
                                placeholder="yyyy-MM-dd HH:mm:ss" autocomplete="off">
                     </label>
                     <label class="logs-keyword-field">
-                        关键字
+                        关键词
                         <input id="logsKeywordInput" type="search" placeholder="搜索节点、输入、输出或错误">
                     </label>
                     <button class="primary-button" type="submit">查询</button>
@@ -525,13 +672,200 @@
         </form>
     </dialog>
 
+    <dialog id="agentToolDialog" class="agent-tool-dialog">
+        <form id="agentToolForm">
+            <div class="dialog-header">
+                <h2 id="agentToolDialogTitle">工具配置</h2>
+                <button id="closeAgentToolDialogButton" type="button" aria-label="关闭">×</button>
+            </div>
+            <div class="agent-tool-dialog-body">
+                <section class="agent-tool-dialog-main">
+                    <label>
+                        工具类型
+                        <input id="agentToolTypeDisplay" type="text" readonly>
+                    </label>
+                    <label>
+                        工具别名
+                        <input id="agentToolNameInput" type="text" placeholder="例如：订单查询接口">
+                    </label>
+                    <label>
+                        适用场景
+                        <textarea id="agentToolPurposeInput" rows="3" placeholder="什么时候允许使用这类能力"></textarea>
+                    </label>
+                    <label>
+                        资源范围
+                        <textarea id="agentToolResourceInput" rows="3" placeholder="例如：只允许访问 /orders、/users 接口"></textarea>
+                    </label>
+                    <label>
+                        使用约束
+                        <textarea id="agentToolGuardrailsInput" rows="3" placeholder="例如：没有真实结果时必须明确说明"></textarea>
+                    </label>
+                </section>
+                <section class="agent-tool-dialog-side">
+                    <div id="agentCurrentTimeToolFields" class="agent-tool-type-fields" hidden>
+                        <label>
+                            时间基准
+                            <select id="agentCurrentTimeModeInput">
+                                <option value="local">本地时间</option>
+                                <option value="utc">UTC</option>
+                                <option value="custom">指定时区</option>
+                            </select>
+                        </label>
+                        <label id="agentCurrentTimeTimeZoneField">
+                            时区 ID
+                            <input id="agentCurrentTimeTimeZoneInput" type="text" placeholder="例如：Asia/Shanghai 或 China Standard Time">
+                        </label>
+                        <label>
+                            输出格式
+                            <input id="agentCurrentTimeFormatInput" type="text" placeholder="yyyy-MM-dd HH:mm:ss zzz">
+                        </label>
+                        <p class="field-hint">该工具会返回格式化时间、ISO 时间、UTC 时间、时区 ID 和 Unix 时间戳。指定时区时支持常见 IANA/Windows 时区名称。</p>
+                    </div>
+                    <div id="agentHttpToolFields" class="agent-tool-type-fields" hidden>
+                        <label>
+                            请求方法
+                            <select id="agentHttpMethodInput">
+                                <option value="GET">GET</option>
+                                <option value="POST">POST</option>
+                                <option value="PUT">PUT</option>
+                                <option value="PATCH">PATCH</option>
+                                <option value="DELETE">DELETE</option>
+                            </select>
+                        </label>
+                        <label>
+                            请求地址
+                            <input id="agentHttpUrlInput" type="url" placeholder="https://api.example.com/items/{{id}}">
+                        </label>
+                        <div class="classifier-heading">
+                            <strong>请求参数</strong>
+                            <button id="addAgentHttpQueryButton" class="icon-add-button" type="button" title="添加参数" aria-label="添加参数">+</button>
+                        </div>
+                        <div id="agentHttpQueryList" class="http-key-value-list"></div>
+                        <div class="classifier-heading">
+                            <strong>请求头</strong>
+                            <button id="addAgentHttpHeaderButton" class="icon-add-button" type="button" title="添加请求头" aria-label="添加请求头">+</button>
+                        </div>
+                        <div id="agentHttpHeaderList" class="http-key-value-list"></div>
+                        <label>
+                            请求体
+                            <textarea id="agentHttpBodyInput" rows="8" placeholder='例如：{"question":"{{question}}"}'></textarea>
+                        </label>
+                        <div class="http-number-grid">
+                            <label>
+                                超时时间（秒）
+                                <input id="agentHttpTimeoutInput" type="number" min="1" max="300" step="1">
+                            </label>
+                            <label>
+                                重试次数
+                                <input id="agentHttpRetryInput" type="number" min="0" max="5" step="1">
+                            </label>
+                        </div>
+                        <p class="field-hint">URL、请求头和请求体均支持使用 {{变量名}}。仅网络错误、超时、408、429 和 5xx 响应会重试。</p>
+                    </div>
+                    <div id="agentWebCrawlerToolFields" class="agent-tool-type-fields" hidden>
+                        <label>
+                            网页链接
+                            <input id="agentWebUrlInput" type="text" placeholder="https://example.com/{{path}}">
+                        </label>
+                        <label>
+                            User Agent
+                            <textarea id="agentWebUserAgentInput" rows="3" placeholder="Mozilla/5.0 ..."></textarea>
+                        </label>
+                        <label class="toggle-field">
+                            <input id="agentWebSummaryInput" type="checkbox">
+                            <span>生成摘要</span>
+                        </label>
+                        <div class="agent-tool-config-grid">
+                            <label>
+                                超时时间（秒）
+                                <input id="agentWebTimeoutInput" type="number" min="1" max="300" step="1">
+                            </label>
+                            <label>
+                                重试次数
+                                <input id="agentWebRetryInput" type="number" min="0" max="5" step="1">
+                            </label>
+                            <label>
+                                最大正文长度
+                                <input id="agentWebMaxLengthInput" type="number" min="1000" max="500000" step="1000">
+                            </label>
+                        </div>
+                        <p class="field-hint">网页链接和 User Agent 支持 {{变量名}}。节点会提取标题、描述、正文、摘要和链接列表，不允许访问本机或内网地址。</p>
+                    </div>
+                    <div id="agentDatabaseToolFields" class="agent-tool-type-fields" hidden>
+                        <label>
+                            数据库类型
+                            <select id="agentDatabaseProviderInput">
+                                <option value="sqlserver">SQL Server</option>
+                                <option value="mysql">MySQL</option>
+                                <option value="postgresql">PostgreSQL</option>
+                            </select>
+                        </label>
+                        <div class="database-connection-grid">
+                            <label>
+                                数据库地址
+                                <input id="agentDatabaseHostInput" type="text" placeholder="127.0.0.1">
+                            </label>
+                            <label>
+                                端口
+                                <input id="agentDatabasePortInput" type="number" min="1" max="65535" step="1">
+                            </label>
+                        </div>
+                        <label>
+                            数据库名称
+                            <input id="agentDatabaseNameInput" type="text">
+                        </label>
+                        <label>
+                            用户名
+                            <input id="agentDatabaseUsernameInput" type="text" autocomplete="off">
+                        </label>
+                        <label>
+                            密码
+                            <input id="agentDatabasePasswordInput" type="password" autocomplete="new-password">
+                        </label>
+                        <label class="toggle-field">
+                            <input id="agentDatabaseSslInput" type="checkbox">
+                            <span>使用 SSL/TLS 连接</span>
+                        </label>
+                        <label>
+                            执行模式
+                            <select id="agentDatabaseModeInput">
+                                <option value="query">查询数据</option>
+                                <option value="execute">执行命令</option>
+                            </select>
+                        </label>
+                        <label>
+                            SQL
+                            <textarea id="agentDatabaseSqlInput" rows="10" placeholder="SELECT * FROM users WHERE id = @id"></textarea>
+                        </label>
+                        <div class="classifier-heading">
+                            <strong>SQL 参数</strong>
+                            <button id="addAgentDatabaseParameterButton" class="icon-add-button" type="button" title="添加 SQL 参数" aria-label="添加 SQL 参数">+</button>
+                        </div>
+                        <div id="agentDatabaseParameterList" class="database-parameter-list"></div>
+                        <label>
+                            超时时间（秒）
+                            <input id="agentDatabaseTimeoutInput" type="number" min="1" max="300" step="1">
+                        </label>
+                        <p class="field-hint">参数值支持 {{变量名}}。密码会随工作流配置保存到 LiteDB，请限制数据库账号权限。</p>
+                    </div>
+                </section>
+            </div>
+            <div class="dialog-actions">
+                <button id="deleteAgentToolButton" class="secondary-button danger-button" type="button">删除工具</button>
+                <button id="cancelAgentToolButton" class="secondary-button" type="button">取消</button>
+                <button id="saveAgentToolButton" class="primary-button" type="submit">保存</button>
+            </div>
+        </form>
+    </dialog>
+
     <div id="canvasContextMenu" class="canvas-context-menu" hidden>
         <button id="contextFitButton" type="button">居中视图</button>
         <button id="contextDeleteButton" class="danger" type="button">删除选中</button>
     </div>
     <div id="designerToast" class="designer-toast" role="status" aria-live="polite" hidden></div>
 
-    <script src="/designer.js?v=31"></script>
+    <script src="/designer.js?v=40"></script>
 </body>
 </html>
+
 

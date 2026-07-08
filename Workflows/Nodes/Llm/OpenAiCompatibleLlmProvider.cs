@@ -2,13 +2,14 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace EaseGPT.Workflows.Nodes.Llm;
 
 /// <summary>
 /// OpenAI-compatible chat provider. Qwen compatible mode, Doubao Ark, OpenAI, and many private gateways can use this adapter.
 /// </summary>
-public sealed class OpenAiCompatibleLlmProvider : ILlmChatProvider
+public sealed partial class OpenAiCompatibleLlmProvider : ILlmChatProvider
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<OpenAiCompatibleLlmProvider> _logger;
@@ -27,12 +28,7 @@ public sealed class OpenAiCompatibleLlmProvider : ILlmChatProvider
     {
         using var httpRequest = new HttpRequestMessage(HttpMethod.Post, request.Endpoint);
         httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", request.ApiKey);
-        httpRequest.Content = JsonContent.Create(new
-        {
-            model = request.Model,
-            messages = BuildMessages(request),
-            temperature = request.Temperature
-        });
+        httpRequest.Content = JsonContent.Create(BuildRequestPayload(request, stream: false));
 
         _logger.LogInformation("Calling LLM provider {Provider}, model {Model}", request.Provider, request.Model);
         using var response = await _httpClient.SendAsync(httpRequest, cancellationToken);
@@ -47,6 +43,7 @@ public sealed class OpenAiCompatibleLlmProvider : ILlmChatProvider
         {
             Text = ExtractAssistantText(rawResponse),
             ReasoningContent = ExtractReasoningContent(rawResponse),
+            ToolCalls = ExtractToolCalls(rawResponse),
             RawResponse = rawResponse,
             Provider = request.Provider,
             Model = request.Model
@@ -60,13 +57,7 @@ public sealed class OpenAiCompatibleLlmProvider : ILlmChatProvider
     {
         using var httpRequest = new HttpRequestMessage(HttpMethod.Post, request.Endpoint);
         httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", request.ApiKey);
-        httpRequest.Content = JsonContent.Create(new
-        {
-            model = request.Model,
-            messages = BuildMessages(request),
-            temperature = request.Temperature,
-            stream = true
-        });
+        httpRequest.Content = JsonContent.Create(BuildRequestPayload(request, stream: true));
 
         _logger.LogInformation("Streaming LLM provider {Provider}, model {Model}", request.Provider, request.Model);
         using var response = await _httpClient.SendAsync(
@@ -131,6 +122,7 @@ public sealed class OpenAiCompatibleLlmProvider : ILlmChatProvider
             {
                 Text = fallback.Text,
                 ReasoningContent = fallback.ReasoningContent,
+                ToolCalls = fallback.ToolCalls,
                 RawResponse = fallback.RawResponse,
                 Provider = request.Provider,
                 Model = request.Model
@@ -155,6 +147,7 @@ public sealed class OpenAiCompatibleLlmProvider : ILlmChatProvider
             {
                 Text = ExtractAssistantText(rawResponse),
                 ReasoningContent = ExtractReasoningContent(rawResponse),
+                ToolCalls = ExtractToolCalls(rawResponse),
                 RawResponse = rawResponse,
                 Provider = string.Empty,
                 Model = string.Empty
@@ -166,6 +159,42 @@ public sealed class OpenAiCompatibleLlmProvider : ILlmChatProvider
         }
     }
 
+    private static Dictionary<string, object?> BuildRequestPayload(LlmChatRequest request, bool stream)
+    {
+        var payload = new Dictionary<string, object?>
+        {
+            ["model"] = request.Model,
+            ["messages"] = BuildMessages(request),
+            ["temperature"] = request.Temperature
+        };
+
+        if (stream)
+        {
+            payload["stream"] = true;
+        }
+
+        if (request.Tools.Count > 0)
+        {
+            payload["tools"] = request.Tools.Select(tool => new
+            {
+                type = tool.Type,
+                function = new
+                {
+                    name = tool.Function.Name,
+                    description = tool.Function.Description,
+                    parameters = tool.Function.Parameters
+                }
+            }).ToArray();
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.ToolChoice))
+        {
+            payload["tool_choice"] = request.ToolChoice;
+        }
+
+        return payload;
+    }
+
     private static object[] BuildMessages(LlmChatRequest request)
     {
         var messages = request.Messages;
@@ -173,18 +202,10 @@ public sealed class OpenAiCompatibleLlmProvider : ILlmChatProvider
 
         if (files.Count == 0)
         {
-            return messages.Select(message => new
-            {
-                role = message.Role,
-                content = message.Content
-            }).ToArray();
+            return messages.Select(BuildMessagePayload).ToArray();
         }
 
-        var result = messages.Select(message => new
-        {
-            role = message.Role,
-            content = (object)message.Content
-        }).Cast<object>().ToList();
+        var result = messages.Select(BuildMessagePayload).ToList();
 
         var fileContent = new List<object>();
         foreach (var file in files)
@@ -225,6 +246,41 @@ public sealed class OpenAiCompatibleLlmProvider : ILlmChatProvider
         return result.ToArray();
     }
 
+    private static object BuildMessagePayload(LlmChatMessage message)
+    {
+        var payload = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["role"] = message.Role
+        };
+
+        if (!string.IsNullOrWhiteSpace(message.Name))
+        {
+            payload["name"] = message.Name;
+        }
+
+        if (!string.IsNullOrWhiteSpace(message.ToolCallId))
+        {
+            payload["tool_call_id"] = message.ToolCallId;
+        }
+
+        if (message.ToolCalls.Count > 0)
+        {
+            payload["tool_calls"] = message.ToolCalls.Select(toolCall => new
+            {
+                id = toolCall.Id,
+                type = toolCall.Type,
+                function = new
+                {
+                    name = toolCall.Function.Name,
+                    arguments = toolCall.Function.Arguments
+                }
+            }).ToArray();
+        }
+
+        payload["content"] = message.Content;
+        return payload;
+    }
+
     private static string ResolveImageDetail(LlmChatFile file, LlmChatRequest request)
         => string.IsNullOrWhiteSpace(file.Detail) ? request.ImageDetail : file.Detail;
 
@@ -241,16 +297,16 @@ public sealed class OpenAiCompatibleLlmProvider : ILlmChatProvider
             if (firstChoice.TryGetProperty("message", out var message)
                 && message.TryGetProperty("content", out var content))
             {
-                return content.ValueKind == JsonValueKind.String ? content.GetString() ?? string.Empty : content.ToString();
+                return NormalizeAssistantText(ExtractContentText(content));
             }
 
             if (firstChoice.TryGetProperty("text", out var text))
             {
-                return text.GetString() ?? string.Empty;
+                return NormalizeAssistantText(text.GetString() ?? string.Empty);
             }
         }
 
-        return rawResponse;
+        return NormalizeAssistantText(rawResponse);
     }
 
     private static string? ExtractReasoningContent(string rawResponse)
@@ -273,6 +329,98 @@ public sealed class OpenAiCompatibleLlmProvider : ILlmChatProvider
         }
 
         return null;
+    }
+
+    private static IReadOnlyCollection<LlmToolCall> ExtractToolCalls(string rawResponse)
+    {
+        using var document = JsonDocument.Parse(rawResponse);
+        var root = document.RootElement;
+
+        if (!root.TryGetProperty("choices", out var choices)
+            || choices.ValueKind != JsonValueKind.Array
+            || choices.GetArrayLength() == 0)
+        {
+            return [];
+        }
+
+        var firstChoice = choices[0];
+        if (!firstChoice.TryGetProperty("message", out var message))
+        {
+            return [];
+        }
+
+        if (!message.TryGetProperty("tool_calls", out var toolCalls)
+            || toolCalls.ValueKind != JsonValueKind.Array)
+        {
+            return ExtractPseudoToolCalls(message);
+        }
+
+        var result = new List<LlmToolCall>();
+        foreach (var toolCall in toolCalls.EnumerateArray())
+        {
+            if (!toolCall.TryGetProperty("function", out var function))
+            {
+                continue;
+            }
+
+            result.Add(new LlmToolCall
+            {
+                Id = TryGetString(toolCall, "id") ?? string.Empty,
+                Type = TryGetString(toolCall, "type") ?? "function",
+                Function = new LlmToolCallFunction
+                {
+                    Name = TryGetString(function, "name") ?? string.Empty,
+                    Arguments = TryGetString(function, "arguments") ?? "{}"
+                }
+            });
+        }
+
+        return result;
+    }
+
+    private static IReadOnlyCollection<LlmToolCall> ExtractPseudoToolCalls(JsonElement message)
+    {
+        if (!message.TryGetProperty("content", out var content) || content.ValueKind != JsonValueKind.String)
+        {
+            return [];
+        }
+
+        var text = content.GetString();
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return [];
+        }
+
+        var matches = CompatiblePseudoToolCallRegex().Matches(text);
+        if (matches.Count == 0)
+        {
+            return [];
+        }
+
+        var result = new List<LlmToolCall>();
+        var index = 0;
+        foreach (Match match in matches)
+        {
+            var name = match.Groups["name"].Value.Trim();
+            var arguments = match.Groups["args"].Value.Trim();
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                continue;
+            }
+
+            result.Add(new LlmToolCall
+            {
+                Id = $"pseudo_call_{++index}",
+                Type = "function",
+                Function = new LlmToolCallFunction
+                {
+                    Name = name,
+                    Arguments = string.IsNullOrWhiteSpace(arguments) ? "{}" : arguments
+                }
+            });
+        }
+
+        return result;
     }
 
     private static LlmChatStreamDelta ExtractStreamDelta(string json)
@@ -304,4 +452,76 @@ public sealed class OpenAiCompatibleLlmProvider : ILlmChatProvider
         => element.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
             ? value.GetString()
             : null;
+
+    private static string ExtractContentText(JsonElement content)
+    {
+        if (content.ValueKind == JsonValueKind.String)
+        {
+            return content.GetString() ?? string.Empty;
+        }
+
+        if (content.ValueKind != JsonValueKind.Array)
+        {
+            return content.ToString();
+        }
+
+        var builder = new StringBuilder();
+        foreach (var item in content.EnumerateArray())
+        {
+            if (item.ValueKind == JsonValueKind.String)
+            {
+                builder.AppendLine(item.GetString());
+                continue;
+            }
+
+            if (item.ValueKind != JsonValueKind.Object)
+            {
+                builder.AppendLine(item.ToString());
+                continue;
+            }
+
+            if (item.TryGetProperty("text", out var text))
+            {
+                builder.AppendLine(text.ValueKind == JsonValueKind.String ? text.GetString() : text.ToString());
+            }
+        }
+
+        return builder.ToString().Trim();
+    }
+
+    private static string NormalizeAssistantText(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return string.Empty;
+        }
+
+        var normalized = text.Replace("\r\n", "\n");
+
+        normalized = CompatiblePseudoToolCallRegex().Replace(normalized, string.Empty);
+        normalized = IncipientInvokeBlockRegex().Replace(normalized, string.Empty);
+        normalized = ToolCallMarkerRegex().Replace(normalized, string.Empty);
+        normalized = IncipientLineRegex().Replace(normalized, string.Empty);
+        normalized = BlankLineRegex().Replace(normalized, "\n\n");
+
+        return normalized.Trim();
+    }
+
+    [GeneratedRegex(@"INCIPIENT\s*```json\s*\{[\s\S]*?\}\s*```", RegexOptions.IgnoreCase)]
+    private static partial Regex IncipientInvokeBlockRegex();
+
+    [GeneratedRegex(@"<\s*\|?\s*tool_call\s*\|?\s*tool_calls_end\s*\|?\s*>", RegexOptions.IgnoreCase)]
+    private static partial Regex ToolCallMarkerRegex();
+
+    [GeneratedRegex(@"(?<prefix>[\p{L}\p{P}\p{Zs}]*)function[-－—_ ]+(?<name>[A-Za-z0-9_.-]+)\s*```(?:json)?\s*(?<args>\{[\s\S]*?\})\s*```(?:\s*<[^>\n]*tool[^\n>]*call[^\n>]*end[^>\n]*>)?", RegexOptions.IgnoreCase)]
+    private static partial Regex PseudoToolCallRegex();
+
+    [GeneratedRegex(@"^\s*INCIPIENT\s*$\n?", RegexOptions.IgnoreCase | RegexOptions.Multiline)]
+    private static partial Regex IncipientLineRegex();
+
+    [GeneratedRegex(@"(?<prefix>[\p{L}\p{P}\p{Zs}]*)function[-_\u2013\u2014\u2015\u2212\uFE63\uFF0D\u2581 ]+(?<name>[A-Za-z0-9_.-]+)\s*```(?:json)?\s*(?<args>\{[\s\S]*?\})\s*```(?:\s*<[^>\n]*tool[^\n>]*call[^\n>]*end[^>\n]*>)?", RegexOptions.IgnoreCase)]
+    private static partial Regex CompatiblePseudoToolCallRegex();
+
+    [GeneratedRegex(@"\n{3,}")]
+    private static partial Regex BlankLineRegex();
 }

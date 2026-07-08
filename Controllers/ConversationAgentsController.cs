@@ -192,5 +192,6 @@ public sealed class ConversationAgentsController : ControllerBase
             0,
             Array.Empty<ConversationAgentPreviewStep>(),
             null,
-            message);
+            message,
+            null);
 }

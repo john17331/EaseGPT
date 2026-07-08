@@ -1,3 +1,5 @@
+using EaseGPT.Workflows.Nodes;
+
 namespace EaseGPT.ConversationAgents;
 
 public sealed class ConversationAgentDefinition
@@ -31,6 +33,12 @@ public sealed class ConversationAgentDefinition
     public double Temperature { get; set; } = 0.7;
 
     public int MaxTokens { get; set; } = 2048;
+
+    public int MaxIterations { get; set; } = 5;
+
+    public int TimeoutSeconds { get; set; } = 180;
+
+    public List<AgentToolSetting> Tools { get; set; } = [];
 
     public bool Published { get; set; }
 

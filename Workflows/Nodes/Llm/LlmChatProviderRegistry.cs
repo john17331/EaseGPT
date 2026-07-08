@@ -13,6 +13,10 @@ public sealed class LlmChatProviderRegistry
             new LlmProviderPreset("openai", "openai-compatible", "https://api.openai.com/v1/chat/completions", "OPENAI_API_KEY"),
             new LlmProviderPreset("qwen", "openai-compatible", "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions", "DASHSCOPE_API_KEY"),
             new LlmProviderPreset("doubao", "openai-compatible", "https://ark.cn-beijing.volces.com/api/v3/chat/completions", "ARK_API_KEY"),
+            new LlmProviderPreset("hunyuan", "openai-compatible", "https://api.hunyuan.cloud.tencent.com/v1/chat/completions", "HUNYUAN_API_KEY"),
+            new LlmProviderPreset("zhipu", "openai-compatible", "https://open.bigmodel.cn/api/paas/v4/chat/completions", "ZHIPUAI_API_KEY"),
+            new LlmProviderPreset("gemini", "openai-compatible", "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", "GEMINI_API_KEY"),
+            new LlmProviderPreset("vllm", "openai-compatible", "http://localhost:8000/v1/chat/completions", "VLLM_API_KEY"),
             new LlmProviderPreset("custom-openai-compatible", "openai-compatible", "https://api.openai.com/v1/chat/completions", "LLM_API_KEY")
         }.ToDictionary(preset => preset.Provider, StringComparer.OrdinalIgnoreCase);
     }

@@ -49,6 +49,25 @@
                             <label class="field">系统提示词<textarea id="instructionsInput" rows="10" placeholder="描述 Agent 的角色、任务、边界和回答要求"></textarea></label>
                         </div>
 
+                        <div class="config-section" data-config-section="tools">
+                            <label class="field">
+                                <span>最大工具轮次</span>
+                                <input id="maxIterationsInput" type="number" min="1" max="12" step="1">
+                            </label>
+                            <label class="field">
+                                <span>超时时间（秒）</span>
+                                <input id="timeoutSecondsInput" type="number" min="1" max="600" step="1">
+                            </label>
+                            <div class="manual-field-heading agent-tool-heading">
+                                <strong>工具设置</strong>
+                                <div class="agent-tool-picker-anchor">
+                                    <button id="addAgentToolButton" class="icon-add-button" type="button" title="添加工具" aria-label="添加工具">+</button>
+                                    <div id="agentToolPicker" class="agent-tool-picker" hidden></div>
+                                </div>
+                            </div>
+                            <div id="agentToolList" class="agent-tool-list"></div>
+                        </div>
+
                         <div class="config-section" data-config-section="knowledge">
                             <label class="field knowledge-field">
                                 <span class="knowledge-field-header">
@@ -188,8 +207,187 @@
             </div>
         </form>
     </dialog>
+    <dialog id="agentToolDialog" class="agent-tool-dialog">
+        <form id="agentToolForm">
+            <div class="dialog-header">
+                <h2 id="agentToolDialogTitle">工具配置</h2>
+                <button id="closeAgentToolDialogButton" type="button" aria-label="关闭">×</button>
+            </div>
+            <div class="agent-tool-dialog-body">
+                <section class="agent-tool-dialog-main">
+                    <label>
+                        工具类型
+                        <input id="agentToolTypeDisplay" type="text" readonly>
+                    </label>
+                    <label>
+                        工具别名
+                        <input id="agentToolNameInput" type="text" placeholder="例如：订单查询接口">
+                    </label>
+                    <label>
+                        适用场景
+                        <textarea id="agentToolPurposeInput" rows="3" placeholder="什么时候允许使用这类能力"></textarea>
+                    </label>
+                    <label>
+                        资源范围
+                        <textarea id="agentToolResourceInput" rows="3" placeholder="例如：只允许访问 /orders、/users 接口"></textarea>
+                    </label>
+                    <label>
+                        使用约束
+                        <textarea id="agentToolGuardrailsInput" rows="3" placeholder="例如：没有真实结果时必须明确说明"></textarea>
+                    </label>
+                </section>
+                <section class="agent-tool-dialog-side">
+                    <div id="agentCurrentTimeToolFields" class="agent-tool-type-fields" hidden>
+                        <label>
+                            时间基准
+                            <select id="agentCurrentTimeModeInput">
+                                <option value="local">本地时间</option>
+                                <option value="utc">UTC</option>
+                                <option value="custom">指定时区</option>
+                            </select>
+                        </label>
+                        <label id="agentCurrentTimeTimeZoneField">
+                            时区 ID
+                            <input id="agentCurrentTimeTimeZoneInput" type="text" placeholder="例如：Asia/Shanghai 或 China Standard Time">
+                        </label>
+                        <label>
+                            输出格式
+                            <input id="agentCurrentTimeFormatInput" type="text" placeholder="yyyy-MM-dd HH:mm:ss zzz">
+                        </label>
+                        <p class="field-hint">该工具会返回格式化时间、ISO 时间、UTC 时间、时区 ID 和 Unix 时间戳。</p>
+                    </div>
+                    <div id="agentHttpToolFields" class="agent-tool-type-fields" hidden>
+                        <div class="agent-tool-config-grid">
+                            <label>
+                                Method
+                                <select id="agentHttpMethodInput">
+                                    <option value="GET">GET</option>
+                                    <option value="POST">POST</option>
+                                    <option value="PUT">PUT</option>
+                                    <option value="PATCH">PATCH</option>
+                                    <option value="DELETE">DELETE</option>
+                                </select>
+                            </label>
+                            <label>
+                                超时(秒)
+                                <input id="agentHttpTimeoutInput" type="number" min="1" max="300" step="1">
+                            </label>
+                            <label>
+                                重试次数
+                                <input id="agentHttpRetryInput" type="number" min="0" max="5" step="1">
+                            </label>
+                        </div>
+                        <label>
+                            URL 模板
+                            <textarea id="agentHttpUrlInput" rows="2" placeholder="https://api.example.com/orders/{{orderId}}"></textarea>
+                        </label>
+                        <label>
+                            Query Parameters JSON
+                            <textarea id="agentHttpQueryInput" rows="4" placeholder='[{"name":"status","value":"{{status}}"}]'></textarea>
+                        </label>
+                        <label>
+                            Headers JSON
+                            <textarea id="agentHttpHeadersInput" rows="4" placeholder='[{"name":"Authorization","value":"Bearer {{token}}"}]'></textarea>
+                        </label>
+                        <label>
+                            Body 模板
+                            <textarea id="agentHttpBodyInput" rows="5" placeholder='{"question":"{{question}}"}'></textarea>
+                        </label>
+                    </div>
+                    <div id="agentWebCrawlerToolFields" class="agent-tool-type-fields" hidden>
+                        <label>
+                            URL 模板
+                            <textarea id="agentWebUrlInput" rows="2" placeholder="https://example.com/orders/{{orderId}}"></textarea>
+                        </label>
+                        <label>
+                            User Agent
+                            <textarea id="agentWebUserAgentInput" rows="3" placeholder="Mozilla/5.0 ..."></textarea>
+                        </label>
+                        <div class="agent-tool-config-grid">
+                            <label>
+                                超时(秒)
+                                <input id="agentWebTimeoutInput" type="number" min="1" max="300" step="1">
+                            </label>
+                            <label>
+                                重试次数
+                                <input id="agentWebRetryInput" type="number" min="0" max="5" step="1">
+                            </label>
+                            <label>
+                                最大正文长度
+                                <input id="agentWebMaxLengthInput" type="number" min="1000" max="500000" step="1000">
+                            </label>
+                        </div>
+                        <label class="toggle-field">
+                            <input id="agentWebSummaryInput" type="checkbox">
+                            <span>生成摘要</span>
+                        </label>
+                    </div>
+                    <div id="agentDatabaseToolFields" class="agent-tool-type-fields" hidden>
+                        <div class="agent-tool-config-grid">
+                            <label>
+                                数据库类型
+                                <select id="agentDatabaseProviderInput">
+                                    <option value="sqlserver">sqlserver</option>
+                                    <option value="mysql">mysql</option>
+                                    <option value="postgresql">postgresql</option>
+                                </select>
+                            </label>
+                            <label>
+                                端口
+                                <input id="agentDatabasePortInput" type="number" min="1" max="65535" step="1">
+                            </label>
+                            <label>
+                                超时(秒)
+                                <input id="agentDatabaseTimeoutInput" type="number" min="1" max="300" step="1">
+                            </label>
+                        </div>
+                        <label>
+                            Host 模板
+                            <input id="agentDatabaseHostInput" type="text" placeholder="127.0.0.1">
+                        </label>
+                        <label>
+                            Database 模板
+                            <input id="agentDatabaseNameInput" type="text" placeholder="app_db">
+                        </label>
+                        <label>
+                            Username 模板
+                            <input id="agentDatabaseUsernameInput" type="text" placeholder="{{dbUser}}">
+                        </label>
+                        <label>
+                            Password 模板
+                            <input id="agentDatabasePasswordInput" type="password" placeholder="{{dbPassword}}">
+                        </label>
+                        <label class="toggle-field">
+                            <input id="agentDatabaseSslInput" type="checkbox">
+                            <span>使用 SSL/TLS</span>
+                        </label>
+                        <label>
+                            执行模式
+                            <select id="agentDatabaseModeInput">
+                                <option value="query">query</option>
+                                <option value="execute">execute</option>
+                            </select>
+                        </label>
+                        <label>
+                            SQL 模板
+                            <textarea id="agentDatabaseSqlInput" rows="5" placeholder="SELECT * FROM orders WHERE id = @orderId"></textarea>
+                        </label>
+                        <label>
+                            Parameters JSON
+                            <textarea id="agentDatabaseParamsInput" rows="4" placeholder='[{"name":"orderId","value":"{{orderId}}","type":"string"}]'></textarea>
+                        </label>
+                    </div>
+                </section>
+            </div>
+            <div class="dialog-actions">
+                <button id="deleteAgentToolButton" class="secondary-button danger-button" type="button">删除工具</button>
+                <button id="cancelAgentToolButton" class="secondary-button" type="button">取消</button>
+                <button id="saveAgentToolButton" class="primary-button" type="submit">保存</button>
+            </div>
+        </form>
+    </dialog>
     <div id="toast" class="toast" role="status"></div>
     <script src="/sse-client.js?v=1"></script>
-    <script src="/agent-designer.js?v=11"></script>
+    <script src="/agent-designer.js?v=12"></script>
 </body>
 </html>

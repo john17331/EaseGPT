@@ -915,10 +915,14 @@ function providerLogoSrc(providerId) {
         system: "/assets/setting.svg",
         none: "/assets/setting.svg",
         deepseek: "/assets/deepseek.svg",
+        gemini: "/assets/gemini.svg",
+        hunyuan: "/assets/tencent.png",
         ollama: "/assets/Ollama.svg",
         openai: "/assets/OpenAI.svg",
         qwen: "/assets/tongyi.svg",
-        doubao: "/assets/Volcengine.svg"
+        doubao: "/assets/Volcengine.svg",
+        vllm: "/assets/vLLM.svg",
+        zhipu: "/assets/ZHIPU.svg"
     };
     return logos[String(providerId || "").toLowerCase()] || "";
 }

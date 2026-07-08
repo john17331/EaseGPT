@@ -19,6 +19,11 @@ const state = {
     previewStartedAt: null,
     previewStatusMessageId: null,
     previewStepDetails: [],
+    agentTools: [],
+    agentToolDialogIndex: null,
+    agentToolDraft: null,
+    agentToolDraftOriginal: null,
+    agentToolPickerOpen: false,
     logFilters: {
         from: initialLogRange.from,
         to: initialLogRange.to,
@@ -31,6 +36,201 @@ const state = {
     openPicker: null
 };
 
+const agentToolCatalog = [
+    {
+        type: "current-time",
+        label: "时间",
+        description: "用于获取当前服务器时间、UTC 时间与时区信息。"
+    },
+    {
+        type: "web-crawler",
+        label: "网页抓取",
+        description: "适合从公开网页获取说明、公告、文章或页面结构。"
+    },
+    {
+        type: "http",
+        label: "HTTP API",
+        description: "适合对接外部接口、业务系统或服务编排入口。"
+    },
+    {
+        type: "database",
+        label: "数据库",
+        description: "适合读取业务表、报表数据或内部结构化记录。"
+    }
+];
+
+const agentToolNodeIcons = {
+    "utility.current-time": '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/><path d="M12 3v2"/><path d="M21 12h-2"/>',
+    "integration.http-request": '<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a15 15 0 0 1 0 18"/><path d="M12 3a15 15 0 0 0 0 18"/>',
+    "integration.database": '<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v7c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12v7c0 1.7 3.6 3 8 3s8-1.3 8-3v-7"/>'
+};
+
+function upgradeAgentToolDialogMarkup() {
+    if (elements.agentHttpToolFields) {
+        elements.agentHttpToolFields.innerHTML = `
+            <label>
+                请求方法
+                <select id="agentHttpMethodInput">
+                    <option value="GET">GET</option>
+                    <option value="POST">POST</option>
+                    <option value="PUT">PUT</option>
+                    <option value="PATCH">PATCH</option>
+                    <option value="DELETE">DELETE</option>
+                </select>
+            </label>
+            <label>
+                请求地址
+                <input id="agentHttpUrlInput" type="url" placeholder="https://api.example.com/items/{{id}}">
+            </label>
+            <div class="classifier-heading">
+                <strong>请求参数</strong>
+                <button id="addAgentHttpQueryButton" class="icon-add-button" type="button" title="添加参数" aria-label="添加参数">+</button>
+            </div>
+            <div id="agentHttpQueryList" class="http-key-value-list"></div>
+            <div class="classifier-heading">
+                <strong>请求头</strong>
+                <button id="addAgentHttpHeaderButton" class="icon-add-button" type="button" title="添加请求头" aria-label="添加请求头">+</button>
+            </div>
+            <div id="agentHttpHeaderList" class="http-key-value-list"></div>
+            <label>
+                请求体
+                <textarea id="agentHttpBodyInput" rows="8" placeholder='例如：{"question":"{{question}}"}'></textarea>
+            </label>
+            <div class="http-number-grid">
+                <label>
+                    超时时间（秒）
+                    <input id="agentHttpTimeoutInput" type="number" min="1" max="300" step="1">
+                </label>
+                <label>
+                    重试次数
+                    <input id="agentHttpRetryInput" type="number" min="0" max="5" step="1">
+                </label>
+            </div>
+            <p class="field-hint">URL、请求头和请求体均支持使用 {{变量名}}。仅网络错误、超时、408、429 和 5xx 响应会重试。</p>
+        `;
+    }
+
+    if (elements.agentWebCrawlerToolFields) {
+        elements.agentWebCrawlerToolFields.innerHTML = `
+            <label>
+                网页链接
+                <input id="agentWebUrlInput" type="text" placeholder="https://example.com/{{path}}">
+            </label>
+            <label>
+                User Agent
+                <textarea id="agentWebUserAgentInput" rows="3" placeholder="Mozilla/5.0 ..."></textarea>
+            </label>
+            <label class="toggle-field">
+                <input id="agentWebSummaryInput" type="checkbox">
+                <span>生成摘要</span>
+            </label>
+            <div class="agent-tool-config-grid">
+                <label>
+                    超时时间（秒）
+                    <input id="agentWebTimeoutInput" type="number" min="1" max="300" step="1">
+                </label>
+                <label>
+                    重试次数
+                    <input id="agentWebRetryInput" type="number" min="0" max="5" step="1">
+                </label>
+                <label>
+                    最大正文长度
+                    <input id="agentWebMaxLengthInput" type="number" min="1000" max="500000" step="1000">
+                </label>
+            </div>
+            <p class="field-hint">网页链接和 User Agent 支持 {{变量名}}。节点会提取标题、描述、正文、摘要和链接列表，不允许访问本机或内网地址。</p>
+        `;
+    }
+
+    if (elements.agentDatabaseToolFields) {
+        elements.agentDatabaseToolFields.innerHTML = `
+            <label>
+                数据库类型
+                <select id="agentDatabaseProviderInput">
+                    <option value="sqlserver">SQL Server</option>
+                    <option value="mysql">MySQL</option>
+                    <option value="postgresql">PostgreSQL</option>
+                </select>
+            </label>
+            <div class="database-connection-grid">
+                <label>
+                    数据库地址
+                    <input id="agentDatabaseHostInput" type="text" placeholder="127.0.0.1">
+                </label>
+                <label>
+                    端口
+                    <input id="agentDatabasePortInput" type="number" min="1" max="65535" step="1">
+                </label>
+            </div>
+            <label>
+                数据库名称
+                <input id="agentDatabaseNameInput" type="text">
+            </label>
+            <label>
+                用户名
+                <input id="agentDatabaseUsernameInput" type="text" autocomplete="off">
+            </label>
+            <label>
+                密码
+                <input id="agentDatabasePasswordInput" type="password" autocomplete="new-password">
+            </label>
+            <label class="toggle-field">
+                <input id="agentDatabaseSslInput" type="checkbox">
+                <span>使用 SSL/TLS 连接</span>
+            </label>
+            <label>
+                执行模式
+                <select id="agentDatabaseModeInput">
+                    <option value="query">查询数据</option>
+                    <option value="execute">执行命令</option>
+                </select>
+            </label>
+            <label>
+                SQL
+                <textarea id="agentDatabaseSqlInput" rows="10" placeholder="SELECT * FROM users WHERE id = @id"></textarea>
+            </label>
+            <div class="classifier-heading">
+                <strong>SQL 参数</strong>
+                <button id="addAgentDatabaseParameterButton" class="icon-add-button" type="button" title="添加 SQL 参数" aria-label="添加 SQL 参数">+</button>
+            </div>
+            <div id="agentDatabaseParameterList" class="database-parameter-list"></div>
+            <label>
+                超时时间（秒）
+                <input id="agentDatabaseTimeoutInput" type="number" min="1" max="300" step="1">
+            </label>
+            <p class="field-hint">参数值支持 {{变量名}}。密码会随工作流配置保存到 LiteDB，请限制数据库账号权限。</p>
+        `;
+    }
+
+    elements.agentHttpMethodInput = document.querySelector("#agentHttpMethodInput");
+    elements.agentHttpTimeoutInput = document.querySelector("#agentHttpTimeoutInput");
+    elements.agentHttpRetryInput = document.querySelector("#agentHttpRetryInput");
+    elements.agentHttpUrlInput = document.querySelector("#agentHttpUrlInput");
+    elements.addAgentHttpQueryButton = document.querySelector("#addAgentHttpQueryButton");
+    elements.addAgentHttpHeaderButton = document.querySelector("#addAgentHttpHeaderButton");
+    elements.agentHttpQueryList = document.querySelector("#agentHttpQueryList");
+    elements.agentHttpHeaderList = document.querySelector("#agentHttpHeaderList");
+    elements.agentHttpBodyInput = document.querySelector("#agentHttpBodyInput");
+    elements.agentWebUrlInput = document.querySelector("#agentWebUrlInput");
+    elements.agentWebUserAgentInput = document.querySelector("#agentWebUserAgentInput");
+    elements.agentWebTimeoutInput = document.querySelector("#agentWebTimeoutInput");
+    elements.agentWebRetryInput = document.querySelector("#agentWebRetryInput");
+    elements.agentWebMaxLengthInput = document.querySelector("#agentWebMaxLengthInput");
+    elements.agentWebSummaryInput = document.querySelector("#agentWebSummaryInput");
+    elements.agentDatabaseProviderInput = document.querySelector("#agentDatabaseProviderInput");
+    elements.agentDatabasePortInput = document.querySelector("#agentDatabasePortInput");
+    elements.agentDatabaseTimeoutInput = document.querySelector("#agentDatabaseTimeoutInput");
+    elements.agentDatabaseHostInput = document.querySelector("#agentDatabaseHostInput");
+    elements.agentDatabaseNameInput = document.querySelector("#agentDatabaseNameInput");
+    elements.agentDatabaseUsernameInput = document.querySelector("#agentDatabaseUsernameInput");
+    elements.agentDatabasePasswordInput = document.querySelector("#agentDatabasePasswordInput");
+    elements.agentDatabaseSslInput = document.querySelector("#agentDatabaseSslInput");
+    elements.agentDatabaseModeInput = document.querySelector("#agentDatabaseModeInput");
+    elements.agentDatabaseSqlInput = document.querySelector("#agentDatabaseSqlInput");
+    elements.addAgentDatabaseParameterButton = document.querySelector("#addAgentDatabaseParameterButton");
+    elements.agentDatabaseParameterList = document.querySelector("#agentDatabaseParameterList");
+}
+
 const elements = {
     agentIcon: document.querySelector("#agentIcon"),
     agentName: document.querySelector("#agentName"),
@@ -38,6 +238,11 @@ const elements = {
     providerSelect: document.querySelector("#providerSelect"),
     providerPicker: document.querySelector("#providerPicker"),
     instructionsInput: document.querySelector("#instructionsInput"),
+    maxIterationsInput: document.querySelector("#maxIterationsInput"),
+    timeoutSecondsInput: document.querySelector("#timeoutSecondsInput"),
+    addAgentToolButton: document.querySelector("#addAgentToolButton"),
+    agentToolPicker: document.querySelector("#agentToolPicker"),
+    agentToolList: document.querySelector("#agentToolList"),
     knowledgeSelect: document.querySelector("#knowledgeSelect"),
     knowledgePicker: document.querySelector("#knowledgePicker"),
     knowledgeRecallButton: document.querySelector("#knowledgeRecallButton"),
@@ -53,6 +258,55 @@ const elements = {
     recallScoreThresholdEnabled: document.querySelector("#recallScoreThresholdEnabled"),
     recallScoreThresholdInput: document.querySelector("#recallScoreThresholdInput"),
     recallScoreThresholdRange: document.querySelector("#recallScoreThresholdRange"),
+    agentToolDialog: document.querySelector("#agentToolDialog"),
+    agentToolForm: document.querySelector("#agentToolForm"),
+    agentToolDialogTitle: document.querySelector("#agentToolDialogTitle"),
+    closeAgentToolDialogButton: document.querySelector("#closeAgentToolDialogButton"),
+    cancelAgentToolButton: document.querySelector("#cancelAgentToolButton"),
+    deleteAgentToolButton: document.querySelector("#deleteAgentToolButton"),
+    agentToolTypeDisplay: document.querySelector("#agentToolTypeDisplay"),
+    agentToolNameInput: document.querySelector("#agentToolNameInput"),
+    agentToolPurposeInput: document.querySelector("#agentToolPurposeInput"),
+    agentToolResourceInput: document.querySelector("#agentToolResourceInput"),
+    agentToolGuardrailsInput: document.querySelector("#agentToolGuardrailsInput"),
+    agentCurrentTimeToolFields: document.querySelector("#agentCurrentTimeToolFields"),
+    agentCurrentTimeModeInput: document.querySelector("#agentCurrentTimeModeInput"),
+    agentCurrentTimeTimeZoneField: document.querySelector("#agentCurrentTimeTimeZoneField"),
+    agentCurrentTimeTimeZoneInput: document.querySelector("#agentCurrentTimeTimeZoneInput"),
+    agentCurrentTimeFormatInput: document.querySelector("#agentCurrentTimeFormatInput"),
+    agentHttpToolFields: document.querySelector("#agentHttpToolFields"),
+    agentHttpMethodInput: document.querySelector("#agentHttpMethodInput"),
+    agentHttpTimeoutInput: document.querySelector("#agentHttpTimeoutInput"),
+    agentHttpRetryInput: document.querySelector("#agentHttpRetryInput"),
+    agentHttpUrlInput: document.querySelector("#agentHttpUrlInput"),
+    agentHttpQueryInput: document.querySelector("#agentHttpQueryInput"),
+    agentHttpHeadersInput: document.querySelector("#agentHttpHeadersInput"),
+    addAgentHttpQueryButton: document.querySelector("#addAgentHttpQueryButton"),
+    addAgentHttpHeaderButton: document.querySelector("#addAgentHttpHeaderButton"),
+    agentHttpQueryList: document.querySelector("#agentHttpQueryList"),
+    agentHttpHeaderList: document.querySelector("#agentHttpHeaderList"),
+    agentHttpBodyInput: document.querySelector("#agentHttpBodyInput"),
+    agentWebCrawlerToolFields: document.querySelector("#agentWebCrawlerToolFields"),
+    agentWebUrlInput: document.querySelector("#agentWebUrlInput"),
+    agentWebUserAgentInput: document.querySelector("#agentWebUserAgentInput"),
+    agentWebTimeoutInput: document.querySelector("#agentWebTimeoutInput"),
+    agentWebRetryInput: document.querySelector("#agentWebRetryInput"),
+    agentWebMaxLengthInput: document.querySelector("#agentWebMaxLengthInput"),
+    agentWebSummaryInput: document.querySelector("#agentWebSummaryInput"),
+    agentDatabaseToolFields: document.querySelector("#agentDatabaseToolFields"),
+    agentDatabaseProviderInput: document.querySelector("#agentDatabaseProviderInput"),
+    agentDatabasePortInput: document.querySelector("#agentDatabasePortInput"),
+    agentDatabaseTimeoutInput: document.querySelector("#agentDatabaseTimeoutInput"),
+    agentDatabaseHostInput: document.querySelector("#agentDatabaseHostInput"),
+    agentDatabaseNameInput: document.querySelector("#agentDatabaseNameInput"),
+    agentDatabaseUsernameInput: document.querySelector("#agentDatabaseUsernameInput"),
+    agentDatabasePasswordInput: document.querySelector("#agentDatabasePasswordInput"),
+    agentDatabaseSslInput: document.querySelector("#agentDatabaseSslInput"),
+    agentDatabaseModeInput: document.querySelector("#agentDatabaseModeInput"),
+    agentDatabaseSqlInput: document.querySelector("#agentDatabaseSqlInput"),
+    agentDatabaseParamsInput: document.querySelector("#agentDatabaseParamsInput"),
+    addAgentDatabaseParameterButton: document.querySelector("#addAgentDatabaseParameterButton"),
+    agentDatabaseParameterList: document.querySelector("#agentDatabaseParameterList"),
     previewMessages: document.querySelector("#previewMessages"),
     suggestionList: document.querySelector("#suggestionList"),
     previewForm: document.querySelector("#previewForm"),
@@ -74,6 +328,8 @@ const elements = {
     toast: document.querySelector("#toast")
 };
 
+upgradeAgentToolDialogMarkup();
+
 elements.saveMenuButton?.addEventListener("click", event => {
     event.stopPropagation();
     elements.saveMenu.hidden = !elements.saveMenu.hidden;
@@ -90,6 +346,11 @@ elements.logsFilterForm?.addEventListener("submit", submitLogFilters);
 initializeLogFilterInputs();
 elements.instructionsInput?.addEventListener("input", markDirty);
 elements.providerSelect?.addEventListener("input", markDirty);
+elements.maxIterationsInput?.addEventListener("input", markDirty);
+elements.timeoutSecondsInput?.addEventListener("input", markDirty);
+elements.addAgentToolButton?.addEventListener("click", toggleAgentToolPicker);
+elements.agentToolPicker?.addEventListener("click", handleAgentToolPickerClick);
+elements.agentToolList?.addEventListener("click", handleAgentToolListClick);
 elements.knowledgeRecallButton?.addEventListener("click", openRecallSettingsDialog);
 elements.closeRecallSettingsButton?.addEventListener("click", closeRecallSettingsDialog);
 elements.cancelRecallSettingsButton?.addEventListener("click", closeRecallSettingsDialog);
@@ -99,9 +360,27 @@ elements.recallTopKRange?.addEventListener("input", syncRecallTopKFromRange);
 elements.recallScoreThresholdEnabled?.addEventListener("change", syncRecallThresholdUi);
 elements.recallScoreThresholdInput?.addEventListener("input", syncRecallThresholdFromInput);
 elements.recallScoreThresholdRange?.addEventListener("input", syncRecallThresholdFromRange);
+elements.agentToolForm?.addEventListener("submit", saveAgentToolDialog);
+elements.closeAgentToolDialogButton?.addEventListener("click", closeAgentToolDialog);
+elements.cancelAgentToolButton?.addEventListener("click", closeAgentToolDialog);
+elements.deleteAgentToolButton?.addEventListener("click", deleteCurrentAgentTool);
+elements.agentToolForm?.addEventListener("input", syncAgentToolDialogDraft);
+elements.agentToolForm?.addEventListener("change", syncAgentToolDialogDraft);
+elements.agentCurrentTimeModeInput?.addEventListener("change", updateAgentCurrentTimeFieldsVisibility);
+elements.addAgentHttpQueryButton?.addEventListener("click", addAgentHttpQueryParameter);
+elements.addAgentHttpHeaderButton?.addEventListener("click", addAgentHttpHeader);
+elements.addAgentDatabaseParameterButton?.addEventListener("click", addAgentDatabaseParameter);
+elements.agentDatabaseProviderInput?.addEventListener("change", updateAgentDatabaseDefaultPort);
+elements.agentToolDialog?.addEventListener("cancel", event => {
+    event.preventDefault();
+    closeAgentToolDialog();
+});
 window.addEventListener("resize", () => {
     updateRangeProgress(elements.recallTopKRange);
     updateRangeProgress(elements.recallScoreThresholdRange);
+    if (state.agentToolPickerOpen) {
+        positionAgentToolPicker();
+    }
 });
 
 document.addEventListener("click", event => {
@@ -154,6 +433,13 @@ document.addEventListener("click", event => {
 
     if (!event.target.closest(".floating-model-picker")) {
         closeModelPickers();
+    }
+
+    if (state.agentToolPickerOpen
+        && !event.target.closest(".agent-tool-picker-anchor")
+        && !event.target.closest("#agentToolPicker")
+        && !event.target.closest("#agentToolDialog")) {
+        closeAgentToolPicker();
     }
 });
 
@@ -210,6 +496,7 @@ async function initialize() {
 function render() {
     const agent = state.agent;
     state.selectedKnowledgeBaseIds = normalizeKnowledgeBaseIds(agent.knowledgeBaseIds);
+    state.agentTools = normalizeAgentTools(agent.tools);
     elements.agentIcon.innerHTML = `<img src="${escapeAttribute(agent.icon || defaultAgentIcon)}" alt="">`;
     elements.agentName.textContent = agent.name;
     elements.agentDescription.textContent = agent.description || "暂无 Agent 描述";
@@ -217,6 +504,18 @@ function render() {
     renderProviderOptions();
     renderKnowledgeOptions();
     elements.instructionsInput.value = agent.instructions || "";
+    if (elements.maxIterationsInput) {
+        elements.maxIterationsInput.value = String(clampInteger(agent.maxIterations, 5, 1, 12));
+    }
+    if (elements.timeoutSecondsInput) {
+        elements.timeoutSecondsInput.value = String(clampInteger(agent.timeoutSeconds, 180, 1, 600));
+    }
+    closeAgentToolPicker();
+    resetAgentToolDialogState();
+    if (elements.agentToolDialog?.open) {
+        elements.agentToolDialog.close();
+    }
+    renderAgentToolList(state.agentTools);
     hydrateRecallSettings();
     renderPreview();
 
@@ -701,11 +1000,657 @@ function getKnowledgeIndexModeLabel(indexMode) {
     return indexModeMap[String(indexMode || "").toLowerCase()] || "混合检索";
 }
 
+function normalizeAgentTools(tools) {
+    const source = Array.isArray(tools) ? tools : [];
+    return source
+        .map(tool => {
+            const toolType = agentToolCatalog.some(item => item.type === tool?.toolType)
+                ? String(tool.toolType).toLowerCase()
+                : "http";
+            const meta = agentToolCatalog.find(item => item.type === toolType);
+            return {
+                toolType,
+                name: typeof tool?.name === "string" ? tool.name : (meta?.label ?? "HTTP API"),
+                purpose: typeof tool?.purpose === "string" ? tool.purpose : "",
+                resource: typeof tool?.resource === "string" ? tool.resource : "",
+                guardrails: typeof tool?.guardrails === "string" ? tool.guardrails : "",
+                currentTime: normalizeAgentCurrentTimeConfig(tool?.currentTime),
+                http: normalizeAgentHttpConfig(tool?.http),
+                webCrawler: normalizeAgentWebCrawlerConfig(tool?.webCrawler),
+                database: normalizeAgentDatabaseConfig(tool?.database)
+            };
+        })
+        .filter(tool => tool?.toolType);
+}
+
+function normalizeAgentCurrentTimeConfig(config) {
+    return {
+        mode: typeof config?.mode === "string" ? config.mode : "local",
+        timeZone: typeof config?.timeZone === "string" ? config.timeZone : "",
+        format: typeof config?.format === "string" && config.format.trim()
+            ? config.format
+            : "yyyy-MM-dd HH:mm:ss zzz"
+    };
+}
+
+function normalizeAgentHttpConfig(config) {
+    return {
+        method: typeof config?.method === "string" ? config.method : "GET",
+        url: typeof config?.url === "string" ? config.url : "",
+        body: typeof config?.body === "string" ? config.body : "",
+        queryParametersJson: typeof config?.queryParametersJson === "string" ? config.queryParametersJson : "[]",
+        headersJson: typeof config?.headersJson === "string" ? config.headersJson : "[]",
+        timeoutSeconds: clampInteger(config?.timeoutSeconds, 30, 1, 300),
+        retryCount: clampInteger(config?.retryCount, 0, 0, 5)
+    };
+}
+
+function normalizeAgentWebCrawlerConfig(config) {
+    return {
+        url: typeof config?.url === "string" ? config.url : "",
+        userAgent: typeof config?.userAgent === "string" && config.userAgent.trim()
+            ? config.userAgent
+            : "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.1000.0 Safari/537.36",
+        generateSummary: config?.generateSummary ?? true,
+        timeoutSeconds: clampInteger(config?.timeoutSeconds, 30, 1, 300),
+        retryCount: clampInteger(config?.retryCount, 0, 0, 5),
+        maxContentLength: clampInteger(config?.maxContentLength, 100000, 1000, 500000)
+    };
+}
+
+function normalizeAgentDatabaseConfig(config) {
+    const provider = typeof config?.provider === "string" ? config.provider : "sqlserver";
+    return {
+        provider,
+        host: typeof config?.host === "string" ? config.host : "",
+        port: clampInteger(config?.port, getDatabaseDefaultPort(provider), 1, 65535),
+        database: typeof config?.database === "string" ? config.database : "",
+        username: typeof config?.username === "string" ? config.username : "",
+        password: typeof config?.password === "string" ? config.password : "",
+        useSsl: !!config?.useSsl,
+        mode: typeof config?.mode === "string" ? config.mode : "query",
+        sql: typeof config?.sql === "string" ? config.sql : "",
+        parametersJson: typeof config?.parametersJson === "string" ? config.parametersJson : "[]",
+        timeoutSeconds: clampInteger(config?.timeoutSeconds, 30, 1, 300)
+    };
+}
+
+function renderAgentToolList(tools) {
+    if (!elements.agentToolList) {
+        return;
+    }
+    if (!tools.length) {
+        elements.agentToolList.innerHTML = '<div class="agent-selection-empty">暂未添加工具，请先添加一个 Agent 工具。</div>';
+        return;
+    }
+
+    elements.agentToolList.innerHTML = tools.map((tool, index) => {
+        const meta = agentToolCatalog.find(item => item.type === tool.toolType);
+        const summary = buildAgentToolSummary(tool);
+        const args = detectAgentToolArgumentNames(tool);
+        return `
+            <article class="agent-tool-card" data-agent-tool-index="${index}">
+                <div class="agent-tool-card-header">
+                    <div class="agent-tool-card-main">
+                        <span class="agent-tool-card-icon">${agentToolIconHtml(tool.toolType)}</span>
+                        <div class="agent-tool-card-copy">
+                            <strong>${escapeHtml(tool.name || meta?.label || tool.toolType)}</strong>
+                            <small>${escapeHtml(meta?.label ?? tool.toolType)}${summary ? ` · ${escapeHtml(summary)}` : ""}</small>
+                        </div>
+                    </div>
+                    <span class="agent-tool-card-actions">
+                        <button class="manual-field-action-button edit" type="button" data-agent-tool-edit="${index}" title="配置工具" aria-label="配置工具">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 20 4.2-1 10.6-10.6a2 2 0 0 0-2.8-2.8L5.4 16.2 4 20Z"/><path d="m14.5 7.1 2.8 2.8"/></svg>
+                        </button>
+                        <button class="manual-field-action-button delete" type="button" data-agent-tool-remove="${index}" title="删除工具" aria-label="删除工具">
+                            <img src="/assets/delete.svg" alt="" aria-hidden="true">
+                        </button>
+                    </span>
+                </div>
+                <div class="agent-tool-card-tags">
+                    ${tool.purpose ? `<span>${escapeHtml(tool.purpose)}</span>` : ""}
+                    ${tool.resource ? `<span>${escapeHtml(tool.resource)}</span>` : ""}
+                    <span>参数 ${args.length ? escapeHtml(args.join(", ")) : "无"}</span>
+                </div>
+            </article>
+        `;
+    }).join("");
+}
+
+function buildAgentToolSummary(tool) {
+    if (tool.toolType === "current-time") {
+        return tool.currentTime?.mode === "custom" && tool.currentTime?.timeZone
+            ? `${tool.currentTime.timeZone} · get_current_time`
+            : `${tool.currentTime?.mode || "local"} · get_current_time`;
+    }
+    if (tool.toolType === "http") {
+        return tool.http?.url || `${tool.http?.method || "GET"} request`;
+    }
+    if (tool.toolType === "web-crawler") {
+        return tool.webCrawler?.url || "web content fetch";
+    }
+    if (tool.toolType === "database") {
+        const databaseName = tool.database?.database?.trim();
+        return databaseName ? `${tool.database?.provider || "sqlserver"} · ${databaseName}` : `${tool.database?.provider || "sqlserver"} query`;
+    }
+    return "";
+}
+
+function agentToolIconHtml(toolType) {
+    const nodeType = toolType === "current-time"
+        ? "utility.current-time"
+        : toolType === "http"
+            ? "integration.http-request"
+            : toolType === "web-crawler"
+                ? "integration.web-crawler"
+                : "integration.database";
+    if (nodeType === "integration.web-crawler") {
+        return '<img src="/assets/webcra.svg" alt="" aria-hidden="true">';
+    }
+    const paths = agentToolNodeIcons[nodeType] ?? '<circle cx="12" cy="12" r="8"/><path d="M12 8v4"/><path d="M12 16h.01"/>';
+    return `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${paths}</svg>`;
+}
+
+function createAgentTool(toolType = "current-time") {
+    const normalizedType = agentToolCatalog.some(item => item.type === toolType) ? toolType : "current-time";
+    const meta = agentToolCatalog.find(item => item.type === normalizedType);
+    return {
+        toolType: normalizedType,
+        name: meta?.label ?? "时间",
+        purpose: "",
+        resource: "",
+        guardrails: "",
+        currentTime: normalizeAgentCurrentTimeConfig(null),
+        http: normalizeAgentHttpConfig(null),
+        webCrawler: normalizeAgentWebCrawlerConfig(null),
+        database: normalizeAgentDatabaseConfig(null)
+    };
+}
+
+function toggleAgentToolPicker(event) {
+    event?.stopPropagation?.();
+    state.agentToolPickerOpen = !state.agentToolPickerOpen;
+    renderAgentToolPicker();
+}
+
+function renderAgentToolPicker() {
+    if (!elements.agentToolPicker) {
+        return;
+    }
+    elements.agentToolPicker.hidden = !state.agentToolPickerOpen;
+    if (!state.agentToolPickerOpen) {
+        elements.agentToolPicker.innerHTML = "";
+        return;
+    }
+
+    elements.agentToolPicker.innerHTML = agentToolCatalog.map(item => `
+        <button class="agent-tool-picker-option" type="button" data-agent-tool-option="${escapeAttribute(item.type)}">
+            <span class="agent-tool-picker-icon">${agentToolIconHtml(item.type)}</span>
+            <span class="agent-tool-picker-copy">
+                <strong>${escapeHtml(item.label)}</strong>
+                <small>${escapeHtml(item.description)}</small>
+            </span>
+        </button>
+    `).join("");
+    positionAgentToolPicker();
+}
+
+function closeAgentToolPicker() {
+    if (!elements.agentToolPicker) {
+        return;
+    }
+    state.agentToolPickerOpen = false;
+    elements.agentToolPicker.hidden = true;
+    elements.agentToolPicker.style.left = "";
+    elements.agentToolPicker.style.top = "";
+}
+
+function positionAgentToolPicker() {
+    if (!state.agentToolPickerOpen || !elements.agentToolPicker || !elements.addAgentToolButton) {
+        return;
+    }
+
+    const buttonRect = elements.addAgentToolButton.getBoundingClientRect();
+    const viewportInset = 12;
+    const preferredWidth = Math.min(420, window.innerWidth - viewportInset * 2);
+    elements.agentToolPicker.style.width = `${preferredWidth}px`;
+
+    const pickerRect = elements.agentToolPicker.getBoundingClientRect();
+    const pickerWidth = pickerRect.width || preferredWidth;
+    const left = Math.max(viewportInset, Math.min(buttonRect.right - pickerWidth, window.innerWidth - pickerWidth - viewportInset));
+    const top = Math.min(buttonRect.bottom + 8, window.innerHeight - pickerRect.height - viewportInset);
+
+    elements.agentToolPicker.style.left = `${Math.round(left)}px`;
+    elements.agentToolPicker.style.top = `${Math.round(Math.max(viewportInset, top))}px`;
+}
+
+function handleAgentToolPickerClick(event) {
+    const option = event.target.closest("[data-agent-tool-option]");
+    if (!option) {
+        return;
+    }
+
+    const toolType = option.dataset.agentToolOption;
+    state.agentTools.push(createAgentTool(toolType));
+    closeAgentToolPicker();
+    renderAgentToolList(state.agentTools);
+    markDirty();
+    openAgentToolDialog(state.agentTools.length - 1);
+}
+
+function openAgentToolDialog(index) {
+    const tool = state.agentTools[index];
+    if (!tool || !elements.agentToolDialog) {
+        return;
+    }
+
+    state.agentToolDialogIndex = index;
+    state.agentToolDraftOriginal = structuredClone(tool);
+    state.agentToolDraft = structuredClone(tool);
+    renderAgentToolDialog();
+    elements.agentToolDialog.showModal();
+    window.setTimeout(() => elements.agentToolNameInput?.focus(), 0);
+}
+
+function renderAgentToolDialog() {
+    const tool = state.agentToolDraft;
+    if (!tool) {
+        return;
+    }
+
+    const meta = agentToolCatalog.find(item => item.type === tool.toolType);
+    elements.agentToolDialogTitle.textContent = `${meta?.label ?? "工具"}配置`;
+    elements.agentToolTypeDisplay.value = meta?.label ?? tool.toolType;
+    elements.agentToolNameInput.value = tool.name ?? "";
+    elements.agentToolPurposeInput.value = tool.purpose ?? "";
+    elements.agentToolResourceInput.value = tool.resource ?? "";
+    elements.agentToolGuardrailsInput.value = tool.guardrails ?? "";
+
+    elements.agentCurrentTimeModeInput.value = tool.currentTime.mode;
+    elements.agentCurrentTimeTimeZoneInput.value = tool.currentTime.timeZone;
+    elements.agentCurrentTimeFormatInput.value = tool.currentTime.format;
+    updateAgentCurrentTimeFieldsVisibility();
+
+    elements.agentHttpMethodInput.value = tool.http.method;
+    elements.agentHttpTimeoutInput.value = tool.http.timeoutSeconds;
+    elements.agentHttpRetryInput.value = tool.http.retryCount;
+    elements.agentHttpUrlInput.value = tool.http.url;
+    elements.agentHttpBodyInput.value = tool.http.body;
+    renderAgentHttpQueryParameters(parseAgentHttpItems(tool.http.queryParametersJson));
+    renderAgentHttpHeaders(parseAgentHttpItems(tool.http.headersJson));
+
+    elements.agentWebUrlInput.value = tool.webCrawler.url;
+    elements.agentWebUserAgentInput.value = tool.webCrawler.userAgent;
+    elements.agentWebTimeoutInput.value = tool.webCrawler.timeoutSeconds;
+    elements.agentWebRetryInput.value = tool.webCrawler.retryCount;
+    elements.agentWebMaxLengthInput.value = tool.webCrawler.maxContentLength;
+    elements.agentWebSummaryInput.checked = !!tool.webCrawler.generateSummary;
+
+    elements.agentDatabaseProviderInput.value = tool.database.provider;
+    elements.agentDatabasePortInput.value = tool.database.port;
+    elements.agentDatabaseTimeoutInput.value = tool.database.timeoutSeconds;
+    elements.agentDatabaseHostInput.value = tool.database.host;
+    elements.agentDatabaseNameInput.value = tool.database.database;
+    elements.agentDatabaseUsernameInput.value = tool.database.username;
+    elements.agentDatabasePasswordInput.value = tool.database.password;
+    elements.agentDatabaseSslInput.checked = !!tool.database.useSsl;
+    elements.agentDatabaseModeInput.value = tool.database.mode;
+    elements.agentDatabaseSqlInput.value = tool.database.sql;
+    renderAgentDatabaseParameters(parseAgentDatabaseParameters(tool.database.parametersJson));
+    updateAgentDatabaseDefaultPort(false);
+
+    elements.agentCurrentTimeToolFields.hidden = tool.toolType !== "current-time";
+    elements.agentHttpToolFields.hidden = tool.toolType !== "http";
+    elements.agentWebCrawlerToolFields.hidden = tool.toolType !== "web-crawler";
+    elements.agentDatabaseToolFields.hidden = tool.toolType !== "database";
+}
+
+function updateAgentCurrentTimeFieldsVisibility() {
+    if (!elements.agentCurrentTimeTimeZoneField || !elements.agentCurrentTimeModeInput) {
+        return;
+    }
+    elements.agentCurrentTimeTimeZoneField.hidden = elements.agentCurrentTimeModeInput.value !== "custom";
+}
+
+function parseAgentHttpItems(value) {
+    try {
+        const parsed = JSON.parse(String(value || "[]"));
+        return Array.isArray(parsed) ? parsed : [];
+    } catch {
+        return [];
+    }
+}
+
+function parseAgentDatabaseParameters(value) {
+    try {
+        const parsed = JSON.parse(String(value || "[]"));
+        return Array.isArray(parsed) ? parsed : [];
+    } catch {
+        return [];
+    }
+}
+
+function renderHttpKeyValueRows(container, items, emptyText, namePlaceholder, valuePlaceholder, removeItem) {
+    container.innerHTML = "";
+    if (items.length === 0) {
+        container.innerHTML = `<div class="empty-state">${emptyText}</div>`;
+        return;
+    }
+
+    items.forEach((item, index) => {
+        const row = document.createElement("div");
+        row.className = "http-key-value-item";
+        row.innerHTML = `
+            <input data-field="name" value="${escapeHtml(item.name ?? "")}" placeholder="${namePlaceholder}">
+            <input data-field="value" value="${escapeHtml(item.value ?? "")}" placeholder="${valuePlaceholder}">
+            <button class="file-delete-button" type="button" title="删除" aria-label="删除">×</button>
+        `;
+        row.querySelector("button").addEventListener("click", () => removeItem(index));
+        container.appendChild(row);
+    });
+}
+
+function renderAgentHttpQueryParameters(parameters) {
+    renderHttpKeyValueRows(
+        elements.agentHttpQueryList,
+        parameters,
+        "暂无请求参数",
+        "参数名",
+        "参数值，支持 {{变量}}",
+        removeAgentHttpQueryParameter);
+}
+
+function renderAgentHttpHeaders(headers) {
+    renderHttpKeyValueRows(
+        elements.agentHttpHeaderList,
+        headers,
+        "暂无自定义请求头",
+        "Header 名称",
+        "Header 值，支持 {{变量}}",
+        removeAgentHttpHeader);
+}
+
+function collectAgentHttpKeyValueRows(container) {
+    return Array.from(container.querySelectorAll(".http-key-value-item"))
+        .map(row => ({
+            name: row.querySelector('[data-field="name"]').value.trim(),
+            value: row.querySelector('[data-field="value"]').value
+        }))
+        .filter(item => item.name);
+}
+
+function collectAgentHttpQueryParameters() {
+    return collectAgentHttpKeyValueRows(elements.agentHttpQueryList);
+}
+
+function collectAgentHttpHeaders() {
+    return collectAgentHttpKeyValueRows(elements.agentHttpHeaderList);
+}
+
+function addAgentHttpQueryParameter() {
+    const parameters = collectAgentHttpQueryParameters();
+    parameters.push({ name: "", value: "" });
+    renderAgentHttpQueryParameters(parameters);
+}
+
+function removeAgentHttpQueryParameter(index) {
+    const parameters = collectAgentHttpQueryParameters();
+    parameters.splice(index, 1);
+    renderAgentHttpQueryParameters(parameters);
+}
+
+function addAgentHttpHeader() {
+    const headers = collectAgentHttpHeaders();
+    headers.push({ name: "", value: "" });
+    renderAgentHttpHeaders(headers);
+}
+
+function removeAgentHttpHeader(index) {
+    const headers = collectAgentHttpHeaders();
+    headers.splice(index, 1);
+    renderAgentHttpHeaders(headers);
+}
+
+function renderAgentDatabaseParameters(parameters) {
+    elements.agentDatabaseParameterList.innerHTML = "";
+    if (parameters.length === 0) {
+        elements.agentDatabaseParameterList.innerHTML = '<div class="empty-state">暂无 SQL 参数</div>';
+        return;
+    }
+
+    parameters.forEach((parameter, index) => {
+        const row = document.createElement("div");
+        row.className = "database-parameter-item";
+        row.innerHTML = `
+            <input data-field="name" value="${escapeHtml(parameter.name ?? "")}" placeholder="参数名，如 id">
+            <select data-field="type">
+                <option value="string">文本</option>
+                <option value="integer">整数</option>
+                <option value="number">数字</option>
+                <option value="boolean">布尔值</option>
+                <option value="datetime">日期时间</option>
+                <option value="null">NULL</option>
+            </select>
+            <button class="file-delete-button" type="button" title="删除参数" aria-label="删除参数">×</button>
+            <input class="database-parameter-value" data-field="value" value="${escapeHtml(parameter.value ?? "")}" placeholder="参数值，支持 {{变量}}">
+        `;
+        row.querySelector('[data-field="type"]').value = parameter.type ?? "string";
+        row.querySelector("button").addEventListener("click", () => removeAgentDatabaseParameter(index));
+        elements.agentDatabaseParameterList.appendChild(row);
+    });
+}
+
+function collectAgentDatabaseParameters() {
+    return Array.from(elements.agentDatabaseParameterList.querySelectorAll(".database-parameter-item"))
+        .map(row => ({
+            name: row.querySelector('[data-field="name"]').value.trim(),
+            type: row.querySelector('[data-field="type"]').value,
+            value: row.querySelector('[data-field="value"]').value
+        }))
+        .filter(parameter => parameter.name);
+}
+
+function addAgentDatabaseParameter() {
+    const parameters = collectAgentDatabaseParameters();
+    parameters.push({ name: "", type: "string", value: "" });
+    renderAgentDatabaseParameters(parameters);
+}
+
+function removeAgentDatabaseParameter(index) {
+    const parameters = collectAgentDatabaseParameters();
+    parameters.splice(index, 1);
+    renderAgentDatabaseParameters(parameters);
+}
+
+function updateAgentDatabaseDefaultPort(overwrite = true) {
+    if (!elements.agentDatabasePortInput || !elements.agentDatabaseProviderInput) {
+        return;
+    }
+    if (!overwrite && String(elements.agentDatabasePortInput.value || "").trim()) {
+        return;
+    }
+    elements.agentDatabasePortInput.value = getDatabaseDefaultPort(elements.agentDatabaseProviderInput.value);
+}
+
+function syncAgentToolDialogDraft() {
+    if (!state.agentToolDraft) {
+        return;
+    }
+
+    state.agentToolDraft = {
+        ...state.agentToolDraft,
+        name: elements.agentToolNameInput.value.trim(),
+        purpose: elements.agentToolPurposeInput.value.trim(),
+        resource: elements.agentToolResourceInput.value.trim(),
+        guardrails: elements.agentToolGuardrailsInput.value.trim(),
+        currentTime: {
+            mode: elements.agentCurrentTimeModeInput.value || "local",
+            timeZone: elements.agentCurrentTimeTimeZoneInput.value.trim(),
+            format: elements.agentCurrentTimeFormatInput.value.trim() || "yyyy-MM-dd HH:mm:ss zzz"
+        },
+        http: {
+            method: elements.agentHttpMethodInput.value || "GET",
+            url: elements.agentHttpUrlInput.value.trim(),
+            body: elements.agentHttpBodyInput.value,
+            queryParametersJson: JSON.stringify(collectAgentHttpQueryParameters()),
+            headersJson: JSON.stringify(collectAgentHttpHeaders()),
+            timeoutSeconds: clampInteger(elements.agentHttpTimeoutInput.value, 30, 1, 300),
+            retryCount: clampInteger(elements.agentHttpRetryInput.value, 0, 0, 5)
+        },
+        webCrawler: {
+            url: elements.agentWebUrlInput.value.trim(),
+            userAgent: elements.agentWebUserAgentInput.value.trim()
+                || "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.1000.0 Safari/537.36",
+            generateSummary: !!elements.agentWebSummaryInput.checked,
+            timeoutSeconds: clampInteger(elements.agentWebTimeoutInput.value, 30, 1, 300),
+            retryCount: clampInteger(elements.agentWebRetryInput.value, 0, 0, 5),
+            maxContentLength: clampInteger(elements.agentWebMaxLengthInput.value, 100000, 1000, 500000)
+        },
+        database: {
+            provider: elements.agentDatabaseProviderInput.value || "sqlserver",
+            host: elements.agentDatabaseHostInput.value.trim(),
+            port: clampInteger(elements.agentDatabasePortInput.value, getDatabaseDefaultPort(elements.agentDatabaseProviderInput.value), 1, 65535),
+            database: elements.agentDatabaseNameInput.value.trim(),
+            username: elements.agentDatabaseUsernameInput.value.trim(),
+            password: elements.agentDatabasePasswordInput.value,
+            useSsl: !!elements.agentDatabaseSslInput.checked,
+            mode: elements.agentDatabaseModeInput.value || "query",
+            sql: elements.agentDatabaseSqlInput.value,
+            parametersJson: JSON.stringify(collectAgentDatabaseParameters()),
+            timeoutSeconds: clampInteger(elements.agentDatabaseTimeoutInput.value, 30, 1, 300)
+        }
+    };
+}
+
+function saveAgentToolDialog(event) {
+    event.preventDefault();
+    if (state.agentToolDialogIndex == null || !state.agentToolDraft) {
+        return;
+    }
+    syncAgentToolDialogDraft();
+    state.agentTools[state.agentToolDialogIndex] = structuredClone(state.agentToolDraft);
+    renderAgentToolList(state.agentTools);
+    markDirty();
+    closeAgentToolDialog(true);
+}
+
+function deleteCurrentAgentTool() {
+    if (state.agentToolDialogIndex == null) {
+        return;
+    }
+    const index = state.agentToolDialogIndex;
+    closeAgentToolDialog(false);
+    removeAgentTool(index);
+}
+
+function closeAgentToolDialog(keepChanges = false) {
+    if (!keepChanges && state.agentToolDialogIndex != null && state.agentToolDraftOriginal) {
+        state.agentTools[state.agentToolDialogIndex] = structuredClone(state.agentToolDraftOriginal);
+    }
+    if (elements.agentToolDialog?.open) {
+        elements.agentToolDialog.close();
+    }
+    resetAgentToolDialogState();
+}
+
+function resetAgentToolDialogState() {
+    state.agentToolDialogIndex = null;
+    state.agentToolDraft = null;
+    state.agentToolDraftOriginal = null;
+}
+
+function removeAgentTool(index) {
+    state.agentTools.splice(index, 1);
+    renderAgentToolList(state.agentTools);
+    markDirty();
+}
+
+function handleAgentToolListClick(event) {
+    const editButton = event.target.closest("[data-agent-tool-edit]");
+    if (editButton) {
+        openAgentToolDialog(Number.parseInt(editButton.dataset.agentToolEdit, 10));
+        return;
+    }
+
+    const removeButton = event.target.closest("[data-agent-tool-remove]");
+    if (removeButton) {
+        removeAgentTool(Number.parseInt(removeButton.dataset.agentToolRemove, 10));
+    }
+}
+
+function collectAgentTools() {
+    return normalizeAgentTools(state.agentTools);
+}
+
+function normalizeJsonArrayText(value) {
+    const text = String(value || "").trim();
+    if (!text) {
+        return "[]";
+    }
+    try {
+        const parsed = JSON.parse(text);
+        return Array.isArray(parsed) ? JSON.stringify(parsed) : "[]";
+    } catch {
+        return text;
+    }
+}
+
+function getDatabaseDefaultPort(provider) {
+    const ports = {
+        sqlserver: 1433,
+        mysql: 3306,
+        postgres: 5432,
+        oracle: 1521,
+        sqlite: 0
+    };
+    return ports[String(provider || "").toLowerCase()] ?? 1433;
+}
+
+function detectAgentToolArgumentNames(tool) {
+    const values = [
+        tool.resource,
+        tool.currentTime?.timeZone,
+        tool.currentTime?.format,
+        tool.http?.url,
+        tool.http?.body,
+        tool.http?.queryParametersJson,
+        tool.http?.headersJson,
+        tool.webCrawler?.url,
+        tool.webCrawler?.userAgent,
+        tool.database?.host,
+        tool.database?.database,
+        tool.database?.username,
+        tool.database?.password,
+        tool.database?.sql,
+        tool.database?.parametersJson
+    ];
+    const names = new Set();
+    for (const value of values) {
+        const text = String(value || "");
+        for (const match of text.matchAll(/\{\{\s*([^}]+?)\s*\}\}/g)) {
+            let name = String(match[1] || "").trim();
+            if (name.startsWith("var.")) {
+                name = name.slice(4);
+            }
+            if (name.startsWith("input.")) {
+                continue;
+            }
+            if (name) {
+                names.add(name);
+            }
+        }
+    }
+    return Array.from(names.values()).sort((a, b) => a.localeCompare(b, "zh-CN"));
+}
+
 function collectAgent(published) {
     return {
         ...state.agent,
         providerConfigId: elements.providerSelect.value || null,
         instructions: elements.instructionsInput.value.trim(),
+        maxIterations: clampInteger(elements.maxIterationsInput?.value, 5, 1, 12),
+        timeoutSeconds: clampInteger(elements.timeoutSecondsInput?.value, 180, 1, 600),
+        tools: collectAgentTools(),
         openingStatement: state.agent.openingStatement || "你好，我是你的 AI 助手。有什么可以帮你？",
         suggestedQuestions: state.agent.suggestedQuestions || [],
         knowledgeBaseIds: [...state.selectedKnowledgeBaseIds],
@@ -837,9 +1782,12 @@ async function submitPreview(event) {
 
             if (streamEvent.type === "preview.completed") {
                 const reply = String(streamEvent.reply || "").trim() || "模型未返回内容。";
+                const modeText = formatExecutionModeLabel(streamEvent.executionMode);
                 updatePreviewMessage(
                     state.previewStatusMessageId,
-                    buildCompletedStatusText(streamEvent.elapsedMilliseconds, state.previewStepDetails));
+                    [buildCompletedStatusText(streamEvent.elapsedMilliseconds, state.previewStepDetails), modeText]
+                        .filter(Boolean)
+                        .join("\n\n"));
                 appendPreviewMessage("assistant", reply);
                 state.previewHistory.push({ role: "assistant", content: reply });
                 completed = true;
@@ -925,6 +1873,34 @@ function buildRunningStatusText() {
 
 function buildCompletedStatusText(elapsedMilliseconds, steps) {
     return buildStatusText(`执行时间 ${formatElapsedClock(elapsedMilliseconds)}`, steps, false);
+}
+
+function formatExecutionModeText(mode) {
+    const normalized = String(mode || "").trim().toLowerCase();
+    if (!normalized) {
+        return "";
+    }
+    if (normalized === "native-tools") {
+        return "执行模式：Native Tools";
+    }
+    if (normalized === "standard-chat") {
+        return "执行模式：Standard Chat";
+    }
+    return "执行模式：ReAct";
+}
+
+function formatExecutionModeLabel(mode) {
+    const normalized = String(mode || "").trim().toLowerCase();
+    if (!normalized) {
+        return "";
+    }
+    if (normalized === "native-tools") {
+        return "Mode: Native Tools";
+    }
+    if (normalized === "standard-chat") {
+        return "Mode: Standard Chat";
+    }
+    return "Mode: ReAct";
 }
 
 function buildStatusText(elapsedText, steps, running = false) {
@@ -1094,11 +2070,13 @@ function renderExecutionRow(item) {
         ? (item.error || "执行失败")
         : (item.reply || "");
 
+    const modeText = formatExecutionModeLabel(item.executionMode);
+
     return `<tr>
         <td>${escapeHtml(formatLogDateTime(item.startedAt))}</td>
         <td>${renderLogStatusBadge(item.status)}</td>
         <td>${escapeHtml(conversationParts.join("\n"))}</td>
-        <td>${escapeHtml(resultText)}</td>
+        <td>${escapeHtml([modeText, resultText].filter(Boolean).join("\n"))}</td>
         <td>${escapeHtml(formatDuration(item.elapsedMilliseconds || 0))}</td>
     </tr>`;
 }
@@ -1241,10 +2219,14 @@ function providerLogoSrc(providerId) {
         none: "/assets/setting.svg",
         knowledge: "/assets/knowledge.svg",
         deepseek: "/assets/deepseek.svg",
+        gemini: "/assets/gemini.svg",
+        hunyuan: "/assets/tencent.png",
         ollama: "/assets/Ollama.svg",
         openai: "/assets/OpenAI.svg",
         qwen: "/assets/tongyi.svg",
-        doubao: "/assets/Volcengine.svg"
+        doubao: "/assets/Volcengine.svg",
+        vllm: "/assets/vLLM.svg",
+        zhipu: "/assets/ZHIPU.svg"
     };
     return logos[String(providerId || "").toLowerCase()] || "";
 }

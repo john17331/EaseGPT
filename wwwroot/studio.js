@@ -570,7 +570,7 @@ function providerLogoContent(provider) {
     if (src) {
         return `<img src="${escapeAttribute(src)}" alt="" aria-hidden="true">`;
     }
-    const labels = { openai: "O", qwen: "Q", doubao: "D", ollama: "O", deepseek: "D" };
+    const labels = { openai: "O", qwen: "Q", doubao: "D", ollama: "O", deepseek: "D", hunyuan: "混", zhipu: "Z", gemini: "G", vllm: "V" };
     return escapeHtml(labels[provider.id] || provider.name.slice(0, 1).toUpperCase());
 }
 
@@ -581,10 +581,14 @@ function providerLogoHasImage(provider) {
 function providerLogoSrc(providerId) {
     const logos = {
         deepseek: "/assets/deepseek.svg",
+        gemini: "/assets/gemini.svg",
+        hunyuan: "/assets/tencent.png",
         ollama: "/assets/Ollama.svg",
         openai: "/assets/OpenAI.svg",
         qwen: "/assets/tongyi.svg",
-        doubao: "/assets/Volcengine.svg"
+        doubao: "/assets/Volcengine.svg",
+        vllm: "/assets/vLLM.svg",
+        zhipu: "/assets/ZHIPU.svg"
     };
     return logos[providerId];
 }

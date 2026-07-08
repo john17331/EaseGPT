@@ -25,6 +25,20 @@ const state = {
     conversationHistory: []
 };
 
+function formatExecutionModeText(mode) {
+    const normalized = String(mode || "").trim().toLowerCase();
+    if (!normalized) {
+        return "";
+    }
+    if (normalized === "native-tools") {
+        return "Native Tools";
+    }
+    if (normalized === "standard-chat") {
+        return "Standard Chat";
+    }
+    return "ReAct";
+}
+
 fileInput.addEventListener("change", () => {
     const selectedKeys = new Set(state.files.map(getFileIdentity));
     for (const file of Array.from(fileInput.files ?? [])) {
@@ -182,6 +196,7 @@ async function runAgent() {
 
         let reply = "";
         let completed = false;
+        let executionMode = "";
 
         await EaseGptSse.consume(response.body, event => {
             if (event.type === "preview.progress") {
@@ -193,7 +208,8 @@ async function runAgent() {
             }
 
             if (event.type === "preview.completed") {
-                reply = String(event.reply || "").trim() || "模型未返回内容。";
+                reply = String(event.reply || "").trim() || "Model returned no content.";
+                executionMode = formatExecutionModeText(event.executionMode);
                 completed = true;
                 return;
             }
@@ -211,7 +227,9 @@ async function runAgent() {
         scrollToLatestMessage();
         saveConversationMessage("assistant", reply, []);
         state.conversationHistory.push({ role: "assistant", content: reply });
-        setStatus("对话 Agent 运行完成");
+        setStatus(executionMode
+            ? `对话 Agent 运行完成 (${executionMode})`
+            : "对话 Agent 运行完成");
     } catch (error) {
         const message = error.name === "AbortError"
             ? "已终止运行"
@@ -279,6 +297,9 @@ function normalizeAgent(agent) {
     normalized.openingStatement = typeof normalized.openingStatement === "string" ? normalized.openingStatement : "";
     normalized.suggestedQuestions = Array.isArray(normalized.suggestedQuestions) ? normalized.suggestedQuestions : [];
     normalized.knowledgeBaseIds = Array.isArray(normalized.knowledgeBaseIds) ? normalized.knowledgeBaseIds : [];
+    normalized.tools = Array.isArray(normalized.tools) ? normalized.tools : [];
+    normalized.maxIterations = Number.isFinite(Number(normalized.maxIterations)) ? Number(normalized.maxIterations) : 5;
+    normalized.timeoutSeconds = Number.isFinite(Number(normalized.timeoutSeconds)) ? Number(normalized.timeoutSeconds) : 180;
     normalized.recallRerankModel = typeof normalized.recallRerankModel === "string" ? normalized.recallRerankModel : "none";
     normalized.recallTopK = Number.isFinite(Number(normalized.recallTopK)) ? Number(normalized.recallTopK) : 4;
     normalized.recallScoreThresholdEnabled = Boolean(normalized.recallScoreThresholdEnabled);

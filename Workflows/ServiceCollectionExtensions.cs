@@ -25,6 +25,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<LiteDbContext>();
         services.AddSingleton<IWorkflowStore, LiteDbWorkflowStore>();
         services.AddSingleton<IWorkflowExecutionLog, LiteDbWorkflowExecutionLog>();
+        services.AddSingleton<IMailFingerprintStore, LiteDbMailFingerprintStore>();
         services.AddSingleton<ILlmProviderConfigStore, LiteDbLlmProviderConfigStore>();
         services.AddSingleton<ILlmProviderDefinitionStore, LiteDbLlmProviderDefinitionStore>();
         services.AddSingleton<ILlmModelMetadataResolver, LlmModelMetadataResolver>();
@@ -37,10 +38,21 @@ public static class ServiceCollectionExtensions
 
         services.AddSingleton<IWorkflowNode, ManualTriggerNode>();
         services.AddSingleton<IWorkflowNode, ScheduleTriggerNode>();
-        services.AddSingleton<IWorkflowNode, HttpRequestNode>();
-        services.AddSingleton<IWorkflowNode, DatabaseNode>();
+        services.AddSingleton<HttpRequestNode>();
+        services.AddSingleton<MailReadNode>();
+        services.AddSingleton<DatabaseNode>();
+        services.AddSingleton<WebCrawlerNode>();
+        services.AddSingleton<CurrentTimeNode>();
+        services.AddSingleton<ForEachNode>();
+        services.AddSingleton<AgentNode>();
+        services.AddSingleton<IWorkflowNode>(sp => sp.GetRequiredService<HttpRequestNode>());
+        services.AddSingleton<IWorkflowNode>(sp => sp.GetRequiredService<MailReadNode>());
+        services.AddSingleton<IWorkflowNode>(sp => sp.GetRequiredService<DatabaseNode>());
         services.AddSingleton<IWorkflowNode, WeComMessageNode>();
-        services.AddSingleton<IWorkflowNode, WebCrawlerNode>();
+        services.AddSingleton<IWorkflowNode>(sp => sp.GetRequiredService<WebCrawlerNode>());
+        services.AddSingleton<IWorkflowNode>(sp => sp.GetRequiredService<CurrentTimeNode>());
+        services.AddSingleton<IWorkflowNode>(sp => sp.GetRequiredService<ForEachNode>());
+        services.AddSingleton<IWorkflowNode>(sp => sp.GetRequiredService<AgentNode>());
         services.AddSingleton<IWorkflowNode, LlmChatNode>();
         services.AddSingleton<IWorkflowNode, KnowledgeRetrievalNode>();
         services.AddSingleton<IWorkflowNode, QuestionClassifierNode>();

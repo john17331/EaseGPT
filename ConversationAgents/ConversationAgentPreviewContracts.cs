@@ -16,10 +16,12 @@ public sealed record ConversationAgentPreviewStreamEvent(
     long ElapsedMilliseconds,
     IReadOnlyList<ConversationAgentPreviewStep> Steps,
     string? Reply,
-    string? Error);
+    string? Error,
+    string? ExecutionMode);
 
 public sealed record ConversationAgentPreviewResponse(
     string Reply,
     long ElapsedMilliseconds,
     IReadOnlyList<string> Steps,
-    IReadOnlyList<ConversationAgentPreviewStep> StepDetails);
+    IReadOnlyList<ConversationAgentPreviewStep> StepDetails,
+    string? ExecutionMode);

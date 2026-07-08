@@ -29,18 +29,32 @@ public sealed class NodeExecutionResult
     /// </summary>
     public Dictionary<string, object?>? Presentation { get; init; }
 
+    /// <summary>
+    /// Optional fan-out dispatches. When provided, the executor enqueues downstream nodes once per dispatch.
+    /// </summary>
+    public IReadOnlyList<NodeExecutionDispatch>? Dispatches { get; init; }
+
     public static NodeExecutionResult Continue(
         Dictionary<string, object?>? data = null,
         string outputPort = "main",
         Dictionary<string, object?>? recordedOutput = null,
         Dictionary<string, object?>? recordedInput = null,
-        Dictionary<string, object?>? presentation = null)
+        Dictionary<string, object?>? presentation = null,
+        IReadOnlyList<NodeExecutionDispatch>? dispatches = null)
         => new()
         {
             OutputPort = outputPort,
             Data = data ?? [],
             RecordedOutput = recordedOutput,
             RecordedInput = recordedInput,
-            Presentation = presentation
+            Presentation = presentation,
+            Dispatches = dispatches
         };
+}
+
+public sealed class NodeExecutionDispatch
+{
+    public string OutputPort { get; init; } = "main";
+
+    public Dictionary<string, object?> Data { get; init; } = [];
 }

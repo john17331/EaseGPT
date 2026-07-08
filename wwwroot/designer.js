@@ -40,6 +40,7 @@ const contextFitButton = document.getElementById("contextFitButton");
 const contextDeleteButton = document.getElementById("contextDeleteButton");
 const propertyTitle = document.getElementById("propertyTitle");
 const propertyEmpty = document.getElementById("propertyEmpty");
+const propertyPanel = document.querySelector(".property-panel");
 const nodeForm = document.getElementById("nodeForm");
 const edgeForm = document.getElementById("edgeForm");
 const nodeNameInput = document.getElementById("nodeNameInput");
@@ -56,6 +57,16 @@ const llmUserPromptInput = document.getElementById("llmUserPromptInput");
 const llmTimeoutInput = document.getElementById("llmTimeoutInput");
 const llmFileInput = document.getElementById("llmFileInput");
 const llmFileList = document.getElementById("llmFileList");
+const agentSettingsPanel = document.getElementById("agentSettingsPanel");
+const agentProviderConfigPicker = document.getElementById("agentProviderConfigPicker");
+const agentProviderConfigSelect = document.getElementById("agentProviderConfigSelect");
+const agentMessageInput = document.getElementById("agentMessageInput");
+const agentInstructionInput = document.getElementById("agentInstructionInput");
+const agentMaxIterationsInput = document.getElementById("agentMaxIterationsInput");
+const addAgentToolButton = document.getElementById("addAgentToolButton");
+const agentToolPicker = document.getElementById("agentToolPicker");
+const agentToolList = document.getElementById("agentToolList");
+const agentTimeoutInput = document.getElementById("agentTimeoutInput");
 const scheduleSettingsPanel = document.getElementById("scheduleSettingsPanel");
 const scheduleTypeSelect = document.getElementById("scheduleTypeSelect");
 const scheduleIntervalField = document.getElementById("scheduleIntervalField");
@@ -63,7 +74,17 @@ const scheduleIntervalInput = document.getElementById("scheduleIntervalInput");
 const scheduleCronFields = document.getElementById("scheduleCronFields");
 const scheduleCronInput = document.getElementById("scheduleCronInput");
 const scheduleTimeZoneSelect = document.getElementById("scheduleTimeZoneSelect");
+const currentTimeSettingsPanel = document.getElementById("currentTimeSettingsPanel");
+const currentTimeModeSelect = document.getElementById("currentTimeModeSelect");
+const currentTimeTimeZoneField = document.getElementById("currentTimeTimeZoneField");
+const currentTimeTimeZoneInput = document.getElementById("currentTimeTimeZoneInput");
+const currentTimeFormatInput = document.getElementById("currentTimeFormatInput");
+const forEachSettingsPanel = document.getElementById("forEachSettingsPanel");
+const forEachItemsVariableInput = document.getElementById("forEachItemsVariableInput");
+const forEachItemVariableInput = document.getElementById("forEachItemVariableInput");
+const forEachIndexVariableInput = document.getElementById("forEachIndexVariableInput");
 const classifierSettingsPanel = document.getElementById("classifierSettingsPanel");
+const classifierProviderConfigPicker = document.getElementById("classifierProviderConfigPicker");
 const classifierProviderConfigSelect = document.getElementById("classifierProviderConfigSelect");
 const classifierInput = document.getElementById("classifierInput");
 const classifierInstruction = document.getElementById("classifierInstruction");
@@ -89,6 +110,24 @@ const addHttpHeaderButton = document.getElementById("addHttpHeaderButton");
 const httpBodyInput = document.getElementById("httpBodyInput");
 const httpTimeoutInput = document.getElementById("httpTimeoutInput");
 const httpRetryInput = document.getElementById("httpRetryInput");
+const mailReadSettingsPanel = document.getElementById("mailReadSettingsPanel");
+const mailProtocolSelect = document.getElementById("mailProtocolSelect");
+const mailHostInput = document.getElementById("mailHostInput");
+const mailPortInput = document.getElementById("mailPortInput");
+const mailSecuritySelect = document.getElementById("mailSecuritySelect");
+const mailUsernameInput = document.getElementById("mailUsernameInput");
+const mailPasswordInput = document.getElementById("mailPasswordInput");
+const mailFolderField = document.getElementById("mailFolderField");
+const mailFolderInput = document.getElementById("mailFolderInput");
+const mailMaxMessagesInput = document.getElementById("mailMaxMessagesInput");
+const mailTimeoutInput = document.getElementById("mailTimeoutInput");
+const mailMaxAttachmentBytesInput = document.getElementById("mailMaxAttachmentBytesInput");
+const mailUnreadOnlyInput = document.getElementById("mailUnreadOnlyInput");
+const mailIgnoreKnownInput = document.getElementById("mailIgnoreKnownInput");
+const mailMarkAsReadInput = document.getElementById("mailMarkAsReadInput");
+const mailPopDeleteField = document.getElementById("mailPopDeleteField");
+const mailPopDeleteInput = document.getElementById("mailPopDeleteInput");
+const mailIncludeAttachmentsInput = document.getElementById("mailIncludeAttachmentsInput");
 const webCrawlerSettingsPanel = document.getElementById("webCrawlerSettingsPanel");
 const webCrawlerUrlInput = document.getElementById("webCrawlerUrlInput");
 const webCrawlerUserAgentInput = document.getElementById("webCrawlerUserAgentInput");
@@ -140,16 +179,66 @@ const manualFieldRequiredInput = document.getElementById("manualFieldRequiredInp
 const manualFieldDateOnlyField = document.getElementById("manualFieldDateOnlyField");
 const manualFieldDateOnlyInput = document.getElementById("manualFieldDateOnlyInput");
 const manualFieldDefaultInput = document.getElementById("manualFieldDefaultInput");
+const agentToolDialog = document.getElementById("agentToolDialog");
+const agentToolForm = document.getElementById("agentToolForm");
+const agentToolDialogTitle = document.getElementById("agentToolDialogTitle");
+const closeAgentToolDialogButton = document.getElementById("closeAgentToolDialogButton");
+const cancelAgentToolButton = document.getElementById("cancelAgentToolButton");
+const deleteAgentToolButton = document.getElementById("deleteAgentToolButton");
+const agentToolTypeDisplay = document.getElementById("agentToolTypeDisplay");
+const agentToolNameInput = document.getElementById("agentToolNameInput");
+const agentToolPurposeInput = document.getElementById("agentToolPurposeInput");
+const agentToolResourceInput = document.getElementById("agentToolResourceInput");
+const agentToolGuardrailsInput = document.getElementById("agentToolGuardrailsInput");
+const agentCurrentTimeToolFields = document.getElementById("agentCurrentTimeToolFields");
+const agentCurrentTimeModeInput = document.getElementById("agentCurrentTimeModeInput");
+const agentCurrentTimeTimeZoneField = document.getElementById("agentCurrentTimeTimeZoneField");
+const agentCurrentTimeTimeZoneInput = document.getElementById("agentCurrentTimeTimeZoneInput");
+const agentCurrentTimeFormatInput = document.getElementById("agentCurrentTimeFormatInput");
+const agentHttpToolFields = document.getElementById("agentHttpToolFields");
+const agentHttpMethodInput = document.getElementById("agentHttpMethodInput");
+const agentHttpTimeoutInput = document.getElementById("agentHttpTimeoutInput");
+const agentHttpRetryInput = document.getElementById("agentHttpRetryInput");
+const agentHttpUrlInput = document.getElementById("agentHttpUrlInput");
+const addAgentHttpQueryButton = document.getElementById("addAgentHttpQueryButton");
+const addAgentHttpHeaderButton = document.getElementById("addAgentHttpHeaderButton");
+const agentHttpQueryList = document.getElementById("agentHttpQueryList");
+const agentHttpHeaderList = document.getElementById("agentHttpHeaderList");
+const agentHttpBodyInput = document.getElementById("agentHttpBodyInput");
+const agentWebCrawlerToolFields = document.getElementById("agentWebCrawlerToolFields");
+const agentWebUrlInput = document.getElementById("agentWebUrlInput");
+const agentWebUserAgentInput = document.getElementById("agentWebUserAgentInput");
+const agentWebTimeoutInput = document.getElementById("agentWebTimeoutInput");
+const agentWebRetryInput = document.getElementById("agentWebRetryInput");
+const agentWebMaxLengthInput = document.getElementById("agentWebMaxLengthInput");
+const agentWebSummaryInput = document.getElementById("agentWebSummaryInput");
+const agentDatabaseToolFields = document.getElementById("agentDatabaseToolFields");
+const agentDatabaseProviderInput = document.getElementById("agentDatabaseProviderInput");
+const agentDatabasePortInput = document.getElementById("agentDatabasePortInput");
+const agentDatabaseTimeoutInput = document.getElementById("agentDatabaseTimeoutInput");
+const agentDatabaseHostInput = document.getElementById("agentDatabaseHostInput");
+const agentDatabaseNameInput = document.getElementById("agentDatabaseNameInput");
+const agentDatabaseUsernameInput = document.getElementById("agentDatabaseUsernameInput");
+const agentDatabasePasswordInput = document.getElementById("agentDatabasePasswordInput");
+const agentDatabaseSslInput = document.getElementById("agentDatabaseSslInput");
+const agentDatabaseModeInput = document.getElementById("agentDatabaseModeInput");
+const agentDatabaseSqlInput = document.getElementById("agentDatabaseSqlInput");
+const addAgentDatabaseParameterButton = document.getElementById("addAgentDatabaseParameterButton");
+const agentDatabaseParameterList = document.getElementById("agentDatabaseParameterList");
 const initialLogRange = createDefaultLogRange();
 
 const chineseNodeNames = {
     "trigger.manual": "用户输入",
     "trigger.schedule": "定时触发",
     "data.template": "输出",
+    "utility.current-time": "时间",
     "integration.http-request": "HTTP 请求",
+    "integration.mail-read": "邮件读取",
+    "flow.for-each": "For Each",
     "integration.web-crawler": "网页抓取",
     "integration.wecom-message": "企业微信群消息推送",
     "integration.database": "Database",
+    "ai.agent": "Agent",
     "ai.llm-chat": "LLM",
     "ai.knowledge-retrieval": "知识检索",
     "ai.question-classifier": "问题分类器"
@@ -157,9 +246,13 @@ const chineseNodeNames = {
 
 const palettePriority = [
     "trigger.manual",
+    "ai.agent",
     "ai.llm-chat",
     "ai.knowledge-retrieval",
     "ai.question-classifier",
+    "utility.current-time",
+    "integration.mail-read",
+    "flow.for-each",
     "data.template",
     "integration.web-crawler",
     "integration.wecom-message"
@@ -167,18 +260,83 @@ const palettePriority = [
 
 const legacyDefaultNames = {
     "trigger.manual": ["手动触发", "手动开始", "Manual Trigger", "Manual start"],
+    "ai.agent": ["Agent", "AI Agent"],
     "ai.llm-chat": ["LLM 对话", "Ask LLM", "LLM Chat"],
+    "utility.current-time": ["Current Time", "时间", "Get Current Time", "get_current_time"],
     "data.template": ["模板输出", "Output LLM info", "输出 LLM 信息", "输出 LLM 消息"],
+    "integration.mail-read": ["邮件读取", "Mail Read", "Read Mail", "Read Email"],
+    "flow.for-each": ["For Each", "循环", "遍历", "逐条处理", "Loop"],
     "integration.wecom-message": ["企业微信消息"]
 };
 const nodeIcons = {
     "trigger.manual": '<path d="M12 3v12"/><path d="m8 11 4 4 4-4"/><path d="M5 21h14"/>',
+    "ai.agent": '<path d="M12 3a4 4 0 0 1 4 4v1h1a3 3 0 0 1 3 3v4a3 3 0 0 1-3 3h-1v1a4 4 0 0 1-8 0v-1H7a3 3 0 0 1-3-3v-4a3 3 0 0 1 3-3h1V7a4 4 0 0 1 4-4Z"/><path d="M9 12h6"/><path d="M12 9v6"/>',
     "ai.llm-chat": '<path d="m12 3-1.5 4.5L6 9l4.5 1.5L12 15l1.5-4.5L18 9l-4.5-1.5Z"/><path d="m5 15-.8 2.2L2 18l2.2.8L5 21l.8-2.2L8 18l-2.2-.8Z"/><path d="m19 14-.8 2.2L16 17l2.2.8L19 20l.8-2.2L22 17l-2.2-.8Z"/>',
+    "utility.current-time": '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/><path d="M12 3v2"/><path d="M21 12h-2"/>',
+    "integration.mail-read": '<path d="M3 7h18v10H3z"/><path d="m4 8 8 6 8-6"/>',
+    "flow.for-each": '<path d="M7 7h11"/><path d="m14 4 4 3-4 3"/><path d="M17 17H6"/><path d="m10 14-4 3 4 3"/>',
     "data.template": '<path d="M9 11 5 15l4 4"/><path d="m15 11 4 4-4 4"/><path d="M12 3v12"/>',
     "trigger.schedule": '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
     "integration.http-request": '<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a15 15 0 0 1 0 18"/><path d="M12 3a15 15 0 0 0 0 18"/>',
     "integration.database": '<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v7c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12v7c0 1.7 3.6 3 8 3s8-1.3 8-3v-7"/>',
     "ai.question-classifier": '<path d="M4 5h6"/><path d="M4 12h6"/><path d="M4 19h6"/><path d="m14 5 2 2 4-4"/><path d="m14 12 2 2 4-4"/><path d="m14 19 2 2 4-4"/>'
+};
+
+const variableDescriptions = {
+    question: "当前工作流接收到的主问题或主输入文本。",
+    files: "用户上传的文件列表，通常用于多模态或文档处理。",
+    scheduledAt: "定时触发节点本次触发的时间。",
+    triggerNodeId: "触发本次执行的触发节点 ID。",
+    agentReply: "Agent 节点最终输出的回答文本。",
+    agentProvider: "Agent 节点实际使用的模型供应商。",
+    agentModel: "Agent 节点实际使用的模型名称。",
+    agentExecutionMode: "Agent 执行模式，通常为 native-tools 或 react。",
+    agentTrace: "Agent 的执行轨迹，包含工具调用和最终回答过程。",
+    llmText: "LLM 节点返回的文本内容。",
+    llmProvider: "LLM 节点实际使用的模型供应商。",
+    llmModel: "LLM 节点实际使用的模型名称。",
+    currentTime: "按节点配置格式化后的当前时间。",
+    currentTimeIso: "ISO 8601 格式的当前时间。",
+    currentTimeUtc: "UTC 时区下的当前时间。",
+    currentTimeZone: "当前时间对应的时区 ID 或名称。",
+    currentUnixTimeSeconds: "当前 Unix 时间戳，单位为秒。",
+    mailProtocol: "本次邮件读取使用的协议，例如 imap 或 pop3。",
+    mailFolder: "本次读取的邮箱文件夹，POP3 通常等价于收件箱。",
+    mailCount: "本次实际读取到的邮件数量。",
+    mailFetchedCount: "本次从服务器取回并检查过的邮件数量，包含已忽略邮件。",
+    mailSkippedCount: "本次因命中内置邮件指纹库而跳过处理的邮件数量。",
+    mailItems: "本次实际处理的邮件对象数组，可配合 For Each 节点逐条遍历。",
+    mailMessages: "本次读取到的完整邮件列表，每项包含主题、发件人、正文、附件等信息。",
+    latestMailItem: "最新一封邮件的原始对象。",
+    latestMail: "最新一封邮件的完整对象。",
+    latestMailText: "最新一封邮件的纯文本正文。",
+    latestMailHtml: "最新一封邮件的 HTML 正文。",
+    latestMailAttachments: "最新一封邮件的附件列表。",
+    forEachCount: "For Each 节点本次遍历的总项目数。",
+    knowledgeQuery: "知识检索节点实际执行的查询文本。",
+    knowledgeHits: "知识检索命中的片段列表。",
+    knowledgeContext: "拼接后的知识上下文文本，适合直接给模型使用。",
+    knowledgeHitCount: "知识检索命中的片段数量。",
+    questionClassId: "问题分类器命中的分类 ID。",
+    questionClassName: "问题分类器命中的分类名称。",
+    statusCode: "HTTP 请求节点返回的状态码。",
+    responseBody: "HTTP 请求节点返回的响应正文。",
+    requestAttempts: "HTTP 请求节点本次执行的请求次数，包含重试。",
+    webUrl: "网页抓取节点实际抓取的网页地址。",
+    webTitle: "抓取网页的标题。",
+    webDescription: "抓取网页的描述信息。",
+    webContent: "抓取网页提取出的正文内容。",
+    webSummary: "网页抓取节点生成的摘要。",
+    webLinks: "网页中提取出的链接列表。",
+    webStatusCode: "网页抓取请求返回的状态码。",
+    webContentType: "网页响应的 Content-Type。",
+    webRequestAttempts: "网页抓取节点本次请求次数，包含重试。",
+    databaseRows: "数据库查询返回的数据行列表。",
+    affectedRows: "数据库执行写入或更新时影响的行数。",
+    text: "输出节点自定义输出的文本结果。",
+    "var.workflowId": "当前工作流的 ID。",
+    "var.executionId": "当前这次执行的唯一 ID。",
+    "var.triggeredAt": "当前执行开始的时间。"
 };
 
 const state = {
@@ -207,12 +365,47 @@ const state = {
     },
     llmPickerOpen: false,
     llmPickerSearch: "",
+    classifierPickerOpen: false,
+    classifierPickerSearch: "",
+    agentPickerOpen: false,
+    agentPickerSearch: "",
+    agentTools: [],
+    agentToolDialogIndex: null,
+    agentToolDraft: null,
+    agentToolDraftOriginal: null,
+    agentToolPickerOpen: false,
     knowledgeRetrievalBaseIds: [],
     knowledgeRetrievalPickerOpen: false,
     knowledgeRetrievalSearch: ""
 };
 
-const extensionNodeTypes = new Set(["integration.web-crawler", "integration.wecom-message"]);
+const agentToolCatalog = [
+    {
+        type: "current-time",
+        label: "时间",
+        description: "用于获取当前服务器时间、UTC 时间与时区信息。"
+    },
+    {
+        type: "web-crawler",
+        label: "网页抓取",
+        description: "适合从公开网页获取说明、公告、文章或页面结构。"
+    },
+    {
+        type: "http",
+        label: "HTTP API",
+        description: "适合对接外部接口、业务系统或服务编排入口。"
+    },
+    {
+        type: "database",
+        label: "数据库",
+        description: "适合读取业务表、报表数据或内部结构化记录。"
+    }
+];
+
+const agentAutoInstructionSectionStart = "## 自动工具生成部分";
+const agentAutoInstructionSectionEnd = "## /自动工具生成部分";
+
+const extensionNodeTypes = new Set(["integration.mail-read", "integration.web-crawler", "integration.wecom-message"]);
 const manualFieldTypes = [
     { type: "text", label: "文本输入框", iconSrc: "/assets/png/TextBox.png" },
     { type: "paragraph", label: "段落变量", iconSrc: "/assets/png/RichTextBox.png" },
@@ -236,6 +429,10 @@ logsFilterForm?.addEventListener("submit", submitLogFilters);
 initializeLogFilterInputs();
 llmProviderConfigPicker.addEventListener("click", handleLlmPickerClick);
 llmProviderConfigPicker.addEventListener("input", handleLlmPickerSearch);
+classifierProviderConfigPicker?.addEventListener("click", handleClassifierPickerClick);
+classifierProviderConfigPicker?.addEventListener("input", handleClassifierPickerSearch);
+agentProviderConfigPicker?.addEventListener("click", handleAgentPickerClick);
+agentProviderConfigPicker?.addEventListener("input", handleAgentPickerSearch);
 saveButton.addEventListener("click", togglePublishMenu);
 runTestButton.hidden = false;
 runTestButton.addEventListener("click", openRunTest);
@@ -278,10 +475,39 @@ addHttpQueryButton.addEventListener("click", addHttpQueryParameter);
 addHttpHeaderButton.addEventListener("click", addHttpHeader);
 addDatabaseParameterButton.addEventListener("click", addDatabaseParameter);
 databaseProviderSelect.addEventListener("change", updateDatabaseDefaultPort);
+mailProtocolSelect?.addEventListener("change", () => {
+    updateMailReadFieldsVisibility();
+    updateMailDefaultPort();
+});
+mailSecuritySelect?.addEventListener("change", updateMailDefaultPort);
+addAgentHttpQueryButton?.addEventListener("click", addAgentHttpQueryParameter);
+addAgentHttpHeaderButton?.addEventListener("click", addAgentHttpHeader);
+addAgentDatabaseParameterButton?.addEventListener("click", addAgentDatabaseParameter);
+agentDatabaseProviderInput?.addEventListener("change", updateAgentDatabaseDefaultPort);
+agentProviderConfigSelect?.addEventListener("change", syncAgentToolDraftFromForm);
+agentMessageInput?.addEventListener("input", syncAgentToolDraftFromForm);
+agentInstructionInput?.addEventListener("input", syncAgentToolDraftFromForm);
+agentMaxIterationsInput?.addEventListener("input", syncAgentToolDraftFromForm);
+agentTimeoutInput?.addEventListener("input", syncAgentToolDraftFromForm);
+addAgentToolButton?.addEventListener("click", toggleAgentToolPicker);
+agentToolPicker?.addEventListener("click", handleAgentToolPickerClick);
+agentToolList?.addEventListener("click", handleAgentToolListClick);
+agentToolForm?.addEventListener("submit", saveAgentToolDialog);
+closeAgentToolDialogButton?.addEventListener("click", closeAgentToolDialog);
+cancelAgentToolButton?.addEventListener("click", closeAgentToolDialog);
+deleteAgentToolButton?.addEventListener("click", deleteCurrentAgentTool);
+agentToolForm?.addEventListener("input", syncAgentToolDialogDraft);
+agentToolForm?.addEventListener("change", syncAgentToolDialogDraft);
+agentCurrentTimeModeInput?.addEventListener("change", updateAgentCurrentTimeFieldsVisibility);
+agentToolDialog?.addEventListener("cancel", event => {
+    event.preventDefault();
+    closeAgentToolDialog();
+});
 outputVariableSelect.addEventListener("change", updateOutputCustomValueVisibility);
 outputFormatSelect.addEventListener("change", updateOutputTableSettingsVisibility);
 addOutputTableColumnButton.addEventListener("click", addOutputTableColumn);
 scheduleTypeSelect.addEventListener("change", updateScheduleFieldsVisibility);
+currentTimeModeSelect?.addEventListener("change", updateCurrentTimeFieldsVisibility);
 paletteTabs.forEach(tab => tab.addEventListener("click", () => selectPaletteTab(tab.dataset.paletteTab)));
 addNodeMenuButton?.addEventListener("click", toggleFloatingNodePalette);
 zoomInButton?.addEventListener("click", () => setCanvasScale(state.canvasScale + 0.1));
@@ -291,6 +517,8 @@ window.addEventListener("pointermove", resizePanel);
 window.addEventListener("pointerup", stopPanelResize);
 window.addEventListener("pointercancel", stopPanelResize);
 window.addEventListener("resize", positionFloatingNodePalette);
+window.addEventListener("resize", positionAgentToolPicker);
+propertyPanel?.addEventListener("scroll", positionAgentToolPicker, { passive: true });
 
 canvasViewport.addEventListener("dragover", event => event.preventDefault());
 canvasViewport.addEventListener("drop", dropNewNode);
@@ -303,6 +531,9 @@ canvasViewport.addEventListener("scroll", positionFloatingNodePalette);
 document.addEventListener("click", hideCanvasContextMenu);
 document.addEventListener("click", closeFloatingNodePalette);
 document.addEventListener("click", closeLlmPickerFromOutside);
+document.addEventListener("click", closeClassifierPickerFromOutside);
+document.addEventListener("click", closeAgentPickerFromOutside);
+document.addEventListener("click", closeAgentToolPickerFromOutside);
 document.addEventListener("click", closeKnowledgeRetrievalPickerFromOutside);
 document.addEventListener("keydown", event => {
     if (event.key === "Escape") {
@@ -314,6 +545,12 @@ document.addEventListener("keydown", event => {
             state.llmPickerSearch = "";
             renderLlmProviderPicker();
         }
+        if (state.agentPickerOpen) {
+            state.agentPickerOpen = false;
+            state.agentPickerSearch = "";
+            renderAgentProviderPicker();
+        }
+        closeAgentToolPicker();
     }
 });
 
@@ -732,11 +969,11 @@ function renderPalette() {
         item.addEventListener("dragstart", event => {
             event.dataTransfer.setData("application/easegpt-node-type", nodeType.type);
         });
-        item.addEventListener("click", () => {
+        item.addEventListener("click", event => {
+            event.preventDefault();
             addNodeToCanvas(nodeType.type, getViewportTopCenterPoint());
             closeFloatingNodePalette();
         });
-        item.addEventListener("dblclick", event => event.preventDefault());
         nodePalette.appendChild(item);
     }
 }
@@ -904,67 +1141,142 @@ function renderProperties() {
 
     if (node) {
         nodeNameInput.value = node.settings?.description ?? "";
+        const isAgentNode = node.type === "ai.agent";
+        const canRenderAgentSettings = supportsAgentSettingsUi();
         const isLlmNode = node.type === "ai.llm-chat";
         const isKnowledgeRetrievalNode = node.type === "ai.knowledge-retrieval";
         const isClassifierNode = node.type === "ai.question-classifier";
         const isManualNode = node.type === "trigger.manual";
         const isOutputNode = node.type === "data.template";
+        const isForEachNode = node.type === "flow.for-each";
         const isHttpNode = node.type === "integration.http-request";
+        const isMailReadNode = node.type === "integration.mail-read";
         const isWebCrawlerNode = node.type === "integration.web-crawler";
         const isWeComNode = node.type === "integration.wecom-message";
         const isDatabaseNode = node.type === "integration.database";
         const isScheduleNode = node.type === "trigger.schedule";
+        const isCurrentTimeNode = node.type === "utility.current-time";
         if (!isLlmNode) {
             state.llmPickerOpen = false;
             state.llmPickerSearch = "";
         }
-        genericSettingsPanel.hidden = isLlmNode || isKnowledgeRetrievalNode || isClassifierNode || isManualNode || isOutputNode || isHttpNode || isWebCrawlerNode || isWeComNode || isDatabaseNode || isScheduleNode;
+        if (!isClassifierNode) {
+            state.classifierPickerOpen = false;
+            state.classifierPickerSearch = "";
+        }
+        if (!isAgentNode) {
+            state.agentPickerOpen = false;
+            state.agentPickerSearch = "";
+            closeAgentToolPicker();
+            resetAgentToolDialogState();
+            if (agentToolDialog?.open) agentToolDialog.close();
+        }
+        genericSettingsPanel.hidden = (isAgentNode && canRenderAgentSettings) || isLlmNode || isKnowledgeRetrievalNode || isClassifierNode || isManualNode || isOutputNode || isForEachNode || isHttpNode || isMailReadNode || isWebCrawlerNode || isWeComNode || isDatabaseNode || isScheduleNode || isCurrentTimeNode;
         manualSettingsPanel.hidden = !isManualNode;
+        if (agentSettingsPanel) {
+            agentSettingsPanel.hidden = !isAgentNode || !canRenderAgentSettings;
+        }
         llmSettingsPanel.hidden = !isLlmNode;
         knowledgeRetrievalSettingsPanel.hidden = !isKnowledgeRetrievalNode;
         scheduleSettingsPanel.hidden = !isScheduleNode;
+        currentTimeSettingsPanel.hidden = !isCurrentTimeNode;
+        forEachSettingsPanel.hidden = !isForEachNode;
         classifierSettingsPanel.hidden = !isClassifierNode;
         httpSettingsPanel.hidden = !isHttpNode;
+        mailReadSettingsPanel.hidden = !isMailReadNode;
         webCrawlerSettingsPanel.hidden = !isWebCrawlerNode;
         wecomSettingsPanel.hidden = !isWeComNode;
         databaseSettingsPanel.hidden = !isDatabaseNode;
         outputSettingsPanel.hidden = !isOutputNode;
 
-        if (isManualNode) {
-            renderManualSettings(node);
-        } else if (isLlmNode) {
-            renderLlmSettings(node);
-        } else if (isKnowledgeRetrievalNode) {
-            renderKnowledgeRetrievalSettings(node);
-        } else if (isClassifierNode) {
-            renderClassifierSettings(node);
-        } else if (isOutputNode) {
-            renderOutputSettings(node);
-        } else if (isHttpNode) {
-            renderHttpSettings(node);
-        } else if (isWebCrawlerNode) {
-            renderWebCrawlerSettings(node);
-        } else if (isWeComNode) {
-            renderWeComSettings(node);
-        } else if (isDatabaseNode) {
-            renderDatabaseSettings(node);
-        } else if (isScheduleNode) {
-            renderScheduleSettings(node);
-        } else {
+        try {
+            if (isManualNode) {
+                renderManualSettings(node);
+            } else if (isAgentNode && canRenderAgentSettings) {
+                renderAgentSettings(node);
+            } else if (isLlmNode) {
+                renderLlmSettings(node);
+            } else if (isKnowledgeRetrievalNode) {
+                renderKnowledgeRetrievalSettings(node);
+            } else if (isClassifierNode) {
+                renderClassifierSettings(node);
+            } else if (isForEachNode) {
+                renderForEachSettings(node);
+            } else if (isOutputNode) {
+                renderOutputSettings(node);
+            } else if (isHttpNode) {
+                renderHttpSettings(node);
+            } else if (isMailReadNode) {
+                renderMailReadSettings(node);
+            } else if (isWebCrawlerNode) {
+                renderWebCrawlerSettings(node);
+            } else if (isWeComNode) {
+                renderWeComSettings(node);
+            } else if (isDatabaseNode) {
+                renderDatabaseSettings(node);
+            } else if (isScheduleNode) {
+                renderScheduleSettings(node);
+            } else if (isCurrentTimeNode) {
+                renderCurrentTimeSettings(node);
+            } else {
+                nodeSettingsInput.value = JSON.stringify(node.settings ?? {}, null, 2);
+            }
+        } catch (error) {
+            genericSettingsPanel.hidden = false;
+            manualSettingsPanel.hidden = true;
+            if (agentSettingsPanel) agentSettingsPanel.hidden = true;
+            llmSettingsPanel.hidden = true;
+            knowledgeRetrievalSettingsPanel.hidden = true;
+            scheduleSettingsPanel.hidden = true;
+            currentTimeSettingsPanel.hidden = true;
+            forEachSettingsPanel.hidden = true;
+            classifierSettingsPanel.hidden = true;
+            httpSettingsPanel.hidden = true;
+            mailReadSettingsPanel.hidden = true;
+            webCrawlerSettingsPanel.hidden = true;
+            wecomSettingsPanel.hidden = true;
+            databaseSettingsPanel.hidden = true;
+            outputSettingsPanel.hidden = true;
             nodeSettingsInput.value = JSON.stringify(node.settings ?? {}, null, 2);
+            console.error("Failed to render node settings panel, fallback to JSON editor.", error);
         }
     }
 
     if (edge) {
         const sourceNode = findNode(edge.sourceNodeId);
+        const sourcePort = normalizeEdgeSourcePort(edge.sourcePort);
         const sourceClass = sourceNode?.type === "ai.question-classifier"
-            ? sourceNode.settings?.classes?.find(item => item.id === edge.sourcePort)
+            ? sourceNode.settings?.classes?.find(item => item.id === sourcePort || item.name === sourcePort)
             : null;
         edgeSourceInput.value = edge.sourceNodeId;
         edgeTargetInput.value = edge.targetNodeId;
-        edgePortInput.value = sourceClass?.name ?? edge.sourcePort ?? "main";
-        edgePortInput.readOnly = Boolean(sourceClass);
+        edgePortInput.value = sourceClass?.name ?? sourcePort;
+        edgePortInput.dataset.sourcePortValue = sourceClass?.id ?? sourcePort;
+        edgePortInput.readOnly = sourceNode?.type === "ai.question-classifier";
     }
+}
+
+function supportsAgentSettingsUi() {
+    return Boolean(
+        agentSettingsPanel
+        && agentProviderConfigPicker
+        && agentProviderConfigSelect
+        && agentMessageInput
+        && agentInstructionInput
+        && agentMaxIterationsInput
+        && addAgentToolButton
+        && agentToolPicker
+        && agentToolList
+        && agentTimeoutInput
+        && agentToolDialog
+        && agentToolForm);
+}
+
+function renderForEachSettings(node) {
+    const settings = node.settings ?? {};
+    forEachItemsVariableInput.value = settings.itemsVariable ?? "";
+    forEachItemVariableInput.value = settings.itemVariableName ?? "currentItem";
+    forEachIndexVariableInput.value = settings.indexVariableName ?? "currentIndex";
 }
 
 function renderScheduleSettings(node) {
@@ -976,10 +1288,23 @@ function renderScheduleSettings(node) {
     updateScheduleFieldsVisibility();
 }
 
+function renderCurrentTimeSettings(node) {
+    const settings = node.settings ?? {};
+    currentTimeModeSelect.value = settings.mode ?? "local";
+    currentTimeTimeZoneInput.value = settings.timeZone ?? "";
+    currentTimeFormatInput.value = settings.format ?? "yyyy-MM-dd HH:mm:ss zzz";
+    updateCurrentTimeFieldsVisibility();
+}
+
 function updateScheduleFieldsVisibility() {
     const isCron = scheduleTypeSelect.value === "cron";
     scheduleIntervalField.hidden = isCron;
     scheduleCronFields.hidden = !isCron;
+}
+
+function updateCurrentTimeFieldsVisibility() {
+    if (!currentTimeTimeZoneField || !currentTimeModeSelect) return;
+    currentTimeTimeZoneField.hidden = currentTimeModeSelect.value !== "custom";
 }
 
 function renderManualFieldTypes() {
@@ -1006,6 +1331,700 @@ function selectManualFieldType(type) {
 function renderManualSettings(node) {
     state.manualInputFields = normalizeManualInputFields(node.settings?.fields);
     renderManualFieldList();
+}
+
+function renderAgentSettings(node) {
+    if (!supportsAgentSettingsUi()) {
+        return;
+    }
+
+    const settings = node.settings ?? {};
+    renderAgentProviderConfigOptions(settings.providerConfigId);
+    agentMessageInput.value = settings.message ?? "{{question}}";
+    agentMaxIterationsInput.value = settings.maxIterations ?? 5;
+    agentTimeoutInput.value = settings.timeoutSeconds ?? 180;
+    state.agentTools = normalizeAgentTools(settings.tools);
+    closeAgentToolPicker();
+    resetAgentToolDialogState();
+    if (agentToolDialog?.open) agentToolDialog.close();
+    agentInstructionInput.value = mergeAgentInstructionWithAutoSection(settings.instruction ?? "", state.agentTools);
+    renderAgentToolList(state.agentTools);
+    syncAgentToolDraftFromForm();
+}
+
+function normalizeAgentTools(tools) {
+    const source = Array.isArray(tools) ? tools : [];
+    return source
+        .map(tool => {
+        const toolType = agentToolCatalog.some(item => item.type === tool?.toolType)
+            ? String(tool.toolType).toLowerCase()
+            : "http";
+        const meta = agentToolCatalog.find(item => item.type === toolType);
+        const normalized = {
+            toolType,
+            name: typeof tool?.name === "string" ? tool.name : (meta?.label ?? "HTTP API"),
+            purpose: typeof tool?.purpose === "string" ? tool.purpose : "",
+            resource: typeof tool?.resource === "string" ? tool.resource : "",
+            guardrails: typeof tool?.guardrails === "string" ? tool.guardrails : "",
+            currentTime: normalizeAgentCurrentTimeConfig(tool?.currentTime),
+            http: normalizeAgentHttpConfig(tool?.http),
+            webCrawler: normalizeAgentWebCrawlerConfig(tool?.webCrawler),
+            database: normalizeAgentDatabaseConfig(tool?.database)
+        };
+        return isLegacyEmptyAgentTool(tool, normalized) ? null : normalized;
+    })
+        .filter(tool => tool?.toolType);
+}
+
+function isLegacyEmptyAgentTool(rawTool, normalizedTool) {
+    if (!rawTool || rawTool.enabled !== false) {
+        return false;
+    }
+
+    const meta = agentToolCatalog.find(item => item.type === normalizedTool.toolType);
+    const hasText = [normalizedTool.name, normalizedTool.purpose, normalizedTool.resource, normalizedTool.guardrails]
+        .some(value => String(value || "").trim() && String(value || "").trim() !== String(meta?.label || "").trim());
+    const hasHttpConfig = [normalizedTool.http.url, normalizedTool.http.body]
+        .some(value => String(value || "").trim())
+        || normalizedTool.http.queryParametersJson !== "[]"
+        || normalizedTool.http.headersJson !== "[]";
+    const hasWebConfig = [normalizedTool.webCrawler.url, normalizedTool.webCrawler.userAgent]
+        .some(value => String(value || "").trim());
+    const hasDbConfig = [normalizedTool.database.host, normalizedTool.database.database, normalizedTool.database.username, normalizedTool.database.password, normalizedTool.database.sql]
+        .some(value => String(value || "").trim())
+        || normalizedTool.database.parametersJson !== "[]";
+    const hasTimeConfig = normalizedTool.currentTime.mode !== "local"
+        || String(normalizedTool.currentTime.timeZone || "").trim()
+        || normalizedTool.currentTime.format !== "yyyy-MM-dd HH:mm:ss zzz";
+
+    return !hasText && !hasHttpConfig && !hasWebConfig && !hasDbConfig && !hasTimeConfig;
+}
+
+function normalizeAgentCurrentTimeConfig(config) {
+    return {
+        mode: typeof config?.mode === "string" ? config.mode : "local",
+        timeZone: typeof config?.timeZone === "string" ? config.timeZone : "",
+        format: typeof config?.format === "string" && config.format.trim()
+            ? config.format
+            : "yyyy-MM-dd HH:mm:ss zzz"
+    };
+}
+
+function normalizeAgentHttpConfig(config) {
+    return {
+        method: typeof config?.method === "string" ? config.method : "GET",
+        url: typeof config?.url === "string" ? config.url : "",
+        body: typeof config?.body === "string" ? config.body : "",
+        queryParametersJson: typeof config?.queryParametersJson === "string" ? config.queryParametersJson : "[]",
+        headersJson: typeof config?.headersJson === "string" ? config.headersJson : "[]",
+        timeoutSeconds: clampInteger(config?.timeoutSeconds, 30, 1, 300),
+        retryCount: clampInteger(config?.retryCount, 0, 0, 5)
+    };
+}
+
+function normalizeAgentWebCrawlerConfig(config) {
+    return {
+        url: typeof config?.url === "string" ? config.url : "",
+        userAgent: typeof config?.userAgent === "string" && config.userAgent.trim()
+            ? config.userAgent
+            : "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.1000.0 Safari/537.36",
+        generateSummary: config?.generateSummary ?? true,
+        timeoutSeconds: clampInteger(config?.timeoutSeconds, 30, 1, 300),
+        retryCount: clampInteger(config?.retryCount, 0, 0, 5),
+        maxContentLength: clampInteger(config?.maxContentLength, 100000, 1000, 500000)
+    };
+}
+
+function normalizeAgentDatabaseConfig(config) {
+    const provider = typeof config?.provider === "string" ? config.provider : "sqlserver";
+    return {
+        provider,
+        host: typeof config?.host === "string" ? config.host : "",
+        port: clampInteger(config?.port, getDatabaseDefaultPort(provider), 1, 65535),
+        database: typeof config?.database === "string" ? config.database : "",
+        username: typeof config?.username === "string" ? config.username : "",
+        password: typeof config?.password === "string" ? config.password : "",
+        useSsl: !!config?.useSsl,
+        mode: typeof config?.mode === "string" ? config.mode : "query",
+        sql: typeof config?.sql === "string" ? config.sql : "",
+        parametersJson: typeof config?.parametersJson === "string" ? config.parametersJson : "[]",
+        timeoutSeconds: clampInteger(config?.timeoutSeconds, 30, 1, 300)
+    };
+}
+
+function renderAgentToolList(tools) {
+    if (!agentToolList) return;
+    if (!tools.length) {
+        agentToolList.innerHTML = '<div class="agent-selection-empty">暂未添加工具，请先添加一个 Agent 工具。</div>';
+        return;
+    }
+
+    agentToolList.innerHTML = tools.map((tool, index) => {
+        const meta = agentToolCatalog.find(item => item.type === tool.toolType);
+        const summary = buildAgentToolSummary(tool);
+        const args = detectAgentToolArgumentNames(tool);
+        return `
+            <article class="agent-tool-card" data-agent-tool-index="${index}">
+                <div class="agent-tool-card-header">
+                    <div class="agent-tool-card-main">
+                        <span class="agent-tool-card-icon">${agentToolIconHtml(tool.toolType)}</span>
+                        <div class="agent-tool-card-copy">
+                            <strong>${escapeHtml(tool.name || meta?.label || tool.toolType)}</strong>
+                            <small>${escapeHtml(meta?.label ?? tool.toolType)}${summary ? ` · ${escapeHtml(summary)}` : ""}</small>
+                        </div>
+                    </div>
+                    <span class="agent-tool-card-actions">
+                        <button class="manual-field-action-button edit" type="button" data-agent-tool-edit="${index}" title="配置工具" aria-label="配置工具">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 20 4.2-1 10.6-10.6a2 2 0 0 0-2.8-2.8L5.4 16.2 4 20Z"/><path d="m14.5 7.1 2.8 2.8"/></svg>
+                        </button>
+                        <button class="manual-field-action-button delete" type="button" data-agent-tool-remove="${index}" title="删除工具" aria-label="删除工具">
+                            <img src="/assets/delete.svg" alt="" aria-hidden="true">
+                        </button>
+                    </span>
+                </div>
+                <div class="agent-tool-card-tags">
+                    ${tool.purpose ? `<span>${escapeHtml(tool.purpose)}</span>` : ""}
+                    ${tool.resource ? `<span>${escapeHtml(tool.resource)}</span>` : ""}
+                    <span>参数 ${args.length ? escapeHtml(args.join(", ")) : "无"}</span>
+                </div>
+            </article>
+        `;
+    }).join("");
+}
+
+function buildAgentToolSummary(tool) {
+    if (tool.toolType === "current-time") {
+        return tool.currentTime?.mode === "custom" && tool.currentTime?.timeZone
+            ? `${tool.currentTime.timeZone} · get_current_time`
+            : `${tool.currentTime?.mode || "local"} · get_current_time`;
+    }
+    if (tool.toolType === "http") {
+        return tool.http?.url || `${tool.http?.method || "GET"} 请求`;
+    }
+    if (tool.toolType === "web-crawler") {
+        return tool.webCrawler?.url || "网页内容抓取";
+    }
+    if (tool.toolType === "database") {
+        const databaseName = tool.database?.database?.trim();
+        return databaseName ? `${tool.database?.provider || "sqlserver"} · ${databaseName}` : `${tool.database?.provider || "sqlserver"} 查询`;
+    }
+    return "";
+}
+
+function agentToolIconHtml(toolType) {
+    const nodeType = toolType === "current-time"
+        ? "utility.current-time"
+        : toolType === "http"
+            ? "integration.http-request"
+            : toolType === "web-crawler"
+                ? "integration.web-crawler"
+                : "integration.database";
+    return renderNodeIcon(nodeType);
+}
+
+function updateAgentCurrentTimeFieldsVisibility() {
+    if (!agentCurrentTimeTimeZoneField || !agentCurrentTimeModeInput) return;
+    agentCurrentTimeTimeZoneField.hidden = agentCurrentTimeModeInput.value !== "custom";
+}
+
+function parseAgentHttpItems(value) {
+    try {
+        const parsed = JSON.parse(String(value || "[]"));
+        return Array.isArray(parsed) ? parsed : [];
+    } catch {
+        return [];
+    }
+}
+
+function parseAgentDatabaseParameters(value) {
+    try {
+        const parsed = JSON.parse(String(value || "[]"));
+        return Array.isArray(parsed) ? parsed : [];
+    } catch {
+        return [];
+    }
+}
+
+function renderAgentHttpQueryParameters(parameters) {
+    renderHttpKeyValueRows(
+        agentHttpQueryList,
+        parameters,
+        "暂无请求参数",
+        "参数名",
+        "参数值，支持 {{变量}}",
+        removeAgentHttpQueryParameter);
+}
+
+function renderAgentHttpHeaders(headers) {
+    renderHttpKeyValueRows(
+        agentHttpHeaderList,
+        headers,
+        "暂无自定义请求头",
+        "Header 名称",
+        "Header 值，支持 {{变量}}",
+        removeAgentHttpHeader);
+}
+
+function collectAgentHttpKeyValueRows(container) {
+    return Array.from(container.querySelectorAll(".http-key-value-item"))
+        .map(row => ({
+            name: row.querySelector('[data-field="name"]').value.trim(),
+            value: row.querySelector('[data-field="value"]').value
+        }))
+        .filter(item => item.name);
+}
+
+function collectAgentHttpQueryParameters() {
+    return collectAgentHttpKeyValueRows(agentHttpQueryList);
+}
+
+function collectAgentHttpHeaders() {
+    return collectAgentHttpKeyValueRows(agentHttpHeaderList);
+}
+
+function addAgentHttpQueryParameter() {
+    const parameters = collectAgentHttpQueryParameters();
+    parameters.push({ name: "", value: "" });
+    renderAgentHttpQueryParameters(parameters);
+}
+
+function removeAgentHttpQueryParameter(index) {
+    const parameters = collectAgentHttpQueryParameters();
+    parameters.splice(index, 1);
+    renderAgentHttpQueryParameters(parameters);
+}
+
+function addAgentHttpHeader() {
+    const headers = collectAgentHttpHeaders();
+    headers.push({ name: "", value: "" });
+    renderAgentHttpHeaders(headers);
+}
+
+function removeAgentHttpHeader(index) {
+    const headers = collectAgentHttpHeaders();
+    headers.splice(index, 1);
+    renderAgentHttpHeaders(headers);
+}
+
+function renderAgentDatabaseParameters(parameters) {
+    agentDatabaseParameterList.innerHTML = "";
+    if (parameters.length === 0) {
+        agentDatabaseParameterList.innerHTML = '<div class="empty-state">暂无 SQL 参数</div>';
+        return;
+    }
+
+    parameters.forEach((parameter, index) => {
+        const row = document.createElement("div");
+        row.className = "database-parameter-item";
+        row.innerHTML = `
+            <input data-field="name" value="${escapeHtml(parameter.name ?? "")}" placeholder="参数名，如 id">
+            <select data-field="type">
+                <option value="string">文本</option>
+                <option value="integer">整数</option>
+                <option value="number">数字</option>
+                <option value="boolean">布尔值</option>
+                <option value="datetime">日期时间</option>
+                <option value="null">NULL</option>
+            </select>
+            <button class="file-delete-button" type="button" title="删除参数" aria-label="删除参数">×</button>
+            <input class="database-parameter-value" data-field="value" value="${escapeHtml(parameter.value ?? "")}" placeholder="参数值，支持 {{变量}}">
+        `;
+        row.querySelector('[data-field="type"]').value = parameter.type ?? "string";
+        row.querySelector("button").addEventListener("click", () => removeAgentDatabaseParameter(index));
+        agentDatabaseParameterList.appendChild(row);
+    });
+}
+
+function collectAgentDatabaseParameters() {
+    return Array.from(agentDatabaseParameterList.querySelectorAll(".database-parameter-item"))
+        .map(row => ({
+            name: row.querySelector('[data-field="name"]').value.trim(),
+            type: row.querySelector('[data-field="type"]').value,
+            value: row.querySelector('[data-field="value"]').value
+        }))
+        .filter(parameter => parameter.name);
+}
+
+function addAgentDatabaseParameter() {
+    const parameters = collectAgentDatabaseParameters();
+    parameters.push({ name: "", type: "string", value: "" });
+    renderAgentDatabaseParameters(parameters);
+}
+
+function removeAgentDatabaseParameter(index) {
+    const parameters = collectAgentDatabaseParameters();
+    parameters.splice(index, 1);
+    renderAgentDatabaseParameters(parameters);
+}
+
+function updateAgentDatabaseDefaultPort(overwrite = true) {
+    if (!agentDatabasePortInput || !agentDatabaseProviderInput) {
+        return;
+    }
+    if (!overwrite && String(agentDatabasePortInput.value || "").trim()) {
+        return;
+    }
+    agentDatabasePortInput.value = getDatabaseDefaultPort(agentDatabaseProviderInput.value);
+}
+
+function syncAgentToolDraftFromForm(event) {
+    if (!supportsAgentSettingsUi() || agentSettingsPanel?.hidden) return;
+    if (event?.target === agentInstructionInput || event?.target === agentMessageInput) {
+        return;
+    }
+    agentInstructionInput.value = mergeAgentInstructionWithAutoSection(agentInstructionInput.value, collectAgentTools());
+}
+
+function createAgentTool(toolType = "current-time") {
+    const normalizedType = agentToolCatalog.some(item => item.type === toolType) ? toolType : "current-time";
+    const meta = agentToolCatalog.find(item => item.type === normalizedType);
+    return {
+        toolType: normalizedType,
+        name: meta?.label ?? "时间",
+        purpose: "",
+        resource: "",
+        guardrails: "",
+        currentTime: normalizeAgentCurrentTimeConfig(null),
+        http: normalizeAgentHttpConfig(null),
+        webCrawler: normalizeAgentWebCrawlerConfig(null),
+        database: normalizeAgentDatabaseConfig(null)
+    };
+}
+
+function toggleAgentToolPicker(event) {
+    if (!supportsAgentSettingsUi()) return;
+    event?.stopPropagation?.();
+    state.agentToolPickerOpen = !state.agentToolPickerOpen;
+    renderAgentToolPicker();
+}
+
+function closeAgentToolPicker() {
+    if (!agentToolPicker) return;
+    state.agentToolPickerOpen = false;
+    agentToolPicker.hidden = true;
+    agentToolPicker.style.left = "";
+    agentToolPicker.style.top = "";
+}
+
+function closeAgentToolPickerFromOutside(event) {
+    if (!state.agentToolPickerOpen || event.target.closest(".agent-tool-picker-anchor")) return;
+    closeAgentToolPicker();
+}
+
+function renderAgentToolPicker() {
+    if (!agentToolPicker) return;
+    agentToolPicker.hidden = !state.agentToolPickerOpen;
+    if (!state.agentToolPickerOpen) {
+        agentToolPicker.innerHTML = "";
+        return;
+    }
+
+    agentToolPicker.innerHTML = agentToolCatalog.map(item => `
+        <button class="agent-tool-picker-option" type="button" data-agent-tool-option="${escapeAttribute(item.type)}">
+            <span class="agent-tool-picker-icon">${agentToolIconHtml(item.type)}</span>
+            <span class="agent-tool-picker-copy">
+                <strong>${escapeHtml(item.label)}</strong>
+                <small>${escapeHtml(item.description)}</small>
+            </span>
+        </button>
+    `).join("");
+    positionAgentToolPicker();
+}
+
+function positionAgentToolPicker() {
+    if (!state.agentToolPickerOpen || !agentToolPicker || !addAgentToolButton) return;
+
+    const buttonRect = addAgentToolButton.getBoundingClientRect();
+    const viewportInset = 12;
+    const preferredWidth = Math.min(420, window.innerWidth - viewportInset * 2);
+    agentToolPicker.style.width = `${preferredWidth}px`;
+
+    const pickerRect = agentToolPicker.getBoundingClientRect();
+    const pickerWidth = pickerRect.width || preferredWidth;
+    const left = Math.max(
+        viewportInset,
+        Math.min(buttonRect.right - pickerWidth, window.innerWidth - pickerWidth - viewportInset));
+    const top = Math.min(
+        buttonRect.bottom + 8,
+        window.innerHeight - pickerRect.height - viewportInset);
+
+    agentToolPicker.style.left = `${Math.round(left)}px`;
+    agentToolPicker.style.top = `${Math.round(Math.max(viewportInset, top))}px`;
+}
+
+function handleAgentToolPickerClick(event) {
+    const option = event.target.closest("[data-agent-tool-option]");
+    if (!option) return;
+    const toolType = option.dataset.agentToolOption;
+    state.agentTools.push(createAgentTool(toolType));
+    closeAgentToolPicker();
+    renderAgentToolList(state.agentTools);
+    syncAgentToolDraftFromForm();
+    openAgentToolDialog(state.agentTools.length - 1);
+}
+
+function openAgentToolDialog(index) {
+    const tool = state.agentTools[index];
+    if (!tool || !agentToolDialog) return;
+
+    state.agentToolDialogIndex = index;
+    state.agentToolDraftOriginal = structuredClone(tool);
+    state.agentToolDraft = structuredClone(tool);
+    renderAgentToolDialog();
+    agentToolDialog.showModal();
+    window.setTimeout(() => agentToolNameInput?.focus(), 0);
+}
+
+function renderAgentToolDialog() {
+    const tool = state.agentToolDraft;
+    if (!tool) return;
+
+    const meta = agentToolCatalog.find(item => item.type === tool.toolType);
+    agentToolDialogTitle.textContent = `${meta?.label ?? "工具"}配置`;
+    agentToolTypeDisplay.value = meta?.label ?? tool.toolType;
+    agentToolNameInput.value = tool.name ?? "";
+    agentToolPurposeInput.value = tool.purpose ?? "";
+    agentToolResourceInput.value = tool.resource ?? "";
+    agentToolGuardrailsInput.value = tool.guardrails ?? "";
+
+    agentCurrentTimeModeInput.value = tool.currentTime.mode;
+    agentCurrentTimeTimeZoneInput.value = tool.currentTime.timeZone;
+    agentCurrentTimeFormatInput.value = tool.currentTime.format;
+    updateAgentCurrentTimeFieldsVisibility();
+
+    agentHttpMethodInput.value = tool.http.method;
+    agentHttpTimeoutInput.value = tool.http.timeoutSeconds;
+    agentHttpRetryInput.value = tool.http.retryCount;
+    agentHttpUrlInput.value = tool.http.url;
+    agentHttpBodyInput.value = tool.http.body;
+    renderAgentHttpQueryParameters(parseAgentHttpItems(tool.http.queryParametersJson));
+    renderAgentHttpHeaders(parseAgentHttpItems(tool.http.headersJson));
+
+    agentWebUrlInput.value = tool.webCrawler.url;
+    agentWebUserAgentInput.value = tool.webCrawler.userAgent;
+    agentWebTimeoutInput.value = tool.webCrawler.timeoutSeconds;
+    agentWebRetryInput.value = tool.webCrawler.retryCount;
+    agentWebMaxLengthInput.value = tool.webCrawler.maxContentLength;
+    agentWebSummaryInput.checked = !!tool.webCrawler.generateSummary;
+
+    agentDatabaseProviderInput.value = tool.database.provider;
+    agentDatabasePortInput.value = tool.database.port;
+    agentDatabaseTimeoutInput.value = tool.database.timeoutSeconds;
+    agentDatabaseHostInput.value = tool.database.host;
+    agentDatabaseNameInput.value = tool.database.database;
+    agentDatabaseUsernameInput.value = tool.database.username;
+    agentDatabasePasswordInput.value = tool.database.password;
+    agentDatabaseSslInput.checked = !!tool.database.useSsl;
+    agentDatabaseModeInput.value = tool.database.mode;
+    agentDatabaseSqlInput.value = tool.database.sql;
+    renderAgentDatabaseParameters(parseAgentDatabaseParameters(tool.database.parametersJson));
+    updateAgentDatabaseDefaultPort(false);
+
+    agentCurrentTimeToolFields.hidden = tool.toolType !== "current-time";
+    agentHttpToolFields.hidden = tool.toolType !== "http";
+    agentWebCrawlerToolFields.hidden = tool.toolType !== "web-crawler";
+    agentDatabaseToolFields.hidden = tool.toolType !== "database";
+}
+
+function syncAgentToolDialogDraft() {
+    if (!state.agentToolDraft) return;
+
+    state.agentToolDraft = {
+        ...state.agentToolDraft,
+        name: agentToolNameInput.value.trim(),
+        purpose: agentToolPurposeInput.value.trim(),
+        resource: agentToolResourceInput.value.trim(),
+        guardrails: agentToolGuardrailsInput.value.trim(),
+        currentTime: {
+            mode: agentCurrentTimeModeInput.value || "local",
+            timeZone: agentCurrentTimeTimeZoneInput.value.trim(),
+            format: agentCurrentTimeFormatInput.value.trim() || "yyyy-MM-dd HH:mm:ss zzz"
+        },
+        http: {
+            method: agentHttpMethodInput.value || "GET",
+            url: agentHttpUrlInput.value.trim(),
+            body: agentHttpBodyInput.value,
+            queryParametersJson: JSON.stringify(collectAgentHttpQueryParameters()),
+            headersJson: JSON.stringify(collectAgentHttpHeaders()),
+            timeoutSeconds: clampInteger(agentHttpTimeoutInput.value, 30, 1, 300),
+            retryCount: clampInteger(agentHttpRetryInput.value, 0, 0, 5)
+        },
+        webCrawler: {
+            url: agentWebUrlInput.value.trim(),
+            userAgent: agentWebUserAgentInput.value.trim()
+                || "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.1000.0 Safari/537.36",
+            generateSummary: !!agentWebSummaryInput.checked,
+            timeoutSeconds: clampInteger(agentWebTimeoutInput.value, 30, 1, 300),
+            retryCount: clampInteger(agentWebRetryInput.value, 0, 0, 5),
+            maxContentLength: clampInteger(agentWebMaxLengthInput.value, 100000, 1000, 500000)
+        },
+        database: {
+            provider: agentDatabaseProviderInput.value || "sqlserver",
+            host: agentDatabaseHostInput.value.trim(),
+            port: clampInteger(agentDatabasePortInput.value, 1433, 1, 65535),
+            database: agentDatabaseNameInput.value.trim(),
+            username: agentDatabaseUsernameInput.value.trim(),
+            password: agentDatabasePasswordInput.value,
+            useSsl: !!agentDatabaseSslInput.checked,
+            mode: agentDatabaseModeInput.value || "query",
+            sql: agentDatabaseSqlInput.value,
+            parametersJson: JSON.stringify(collectAgentDatabaseParameters()),
+            timeoutSeconds: clampInteger(agentDatabaseTimeoutInput.value, 30, 1, 300)
+        }
+    };
+}
+
+function saveAgentToolDialog(event) {
+    event.preventDefault();
+    if (state.agentToolDialogIndex == null || !state.agentToolDraft) return;
+    syncAgentToolDialogDraft();
+    state.agentTools[state.agentToolDialogIndex] = structuredClone(state.agentToolDraft);
+    renderAgentToolList(state.agentTools);
+    syncAgentToolDraftFromForm();
+    closeAgentToolDialog(true);
+}
+
+function deleteCurrentAgentTool() {
+    if (state.agentToolDialogIndex == null) return;
+    const index = state.agentToolDialogIndex;
+    closeAgentToolDialog(false);
+    removeAgentTool(index);
+}
+
+function closeAgentToolDialog(keepChanges = false) {
+    if (!keepChanges && state.agentToolDialogIndex != null && state.agentToolDraftOriginal) {
+        state.agentTools[state.agentToolDialogIndex] = structuredClone(state.agentToolDraftOriginal);
+    }
+    if (agentToolDialog?.open) {
+        agentToolDialog.close();
+    }
+    resetAgentToolDialogState();
+}
+
+function resetAgentToolDialogState() {
+    state.agentToolDialogIndex = null;
+    state.agentToolDraft = null;
+    state.agentToolDraftOriginal = null;
+}
+
+function removeAgentTool(index) {
+    if (!supportsAgentSettingsUi()) return;
+    state.agentTools.splice(index, 1);
+    renderAgentToolList(state.agentTools);
+    syncAgentToolDraftFromForm();
+}
+
+function handleAgentToolListClick(event) {
+    const editButton = event.target.closest("[data-agent-tool-edit]");
+    if (editButton) {
+        openAgentToolDialog(Number.parseInt(editButton.dataset.agentToolEdit, 10));
+        return;
+    }
+
+    const removeButton = event.target.closest("[data-agent-tool-remove]");
+    if (removeButton) {
+        removeAgentTool(Number.parseInt(removeButton.dataset.agentToolRemove, 10));
+    }
+}
+
+function collectAgentTools() {
+    return normalizeAgentTools(state.agentTools);
+}
+
+function normalizeJsonArrayText(value) {
+    const text = String(value || "").trim();
+    if (!text) return "[]";
+    try {
+        const parsed = JSON.parse(text);
+        return Array.isArray(parsed) ? JSON.stringify(parsed) : "[]";
+    } catch {
+        return text;
+    }
+}
+
+function mergeAgentInstructionWithAutoSection(instruction, tools) {
+    const manualSection = stripAgentAutoInstructionSection(instruction);
+    const autoSection = buildAgentToolInstructionSection(tools);
+    return [manualSection, autoSection].filter(Boolean).join("\n\n").trim();
+}
+
+function stripAgentAutoInstructionSection(instruction) {
+    const text = String(instruction || "").trim();
+    if (!text) return "";
+    const start = text.indexOf(agentAutoInstructionSectionStart);
+    const end = text.indexOf(agentAutoInstructionSectionEnd);
+    if (start === -1 || end === -1 || end < start) {
+        return text;
+    }
+    const before = text.slice(0, start).trim();
+    const after = text.slice(end + agentAutoInstructionSectionEnd.length).trim();
+    return [before, after].filter(Boolean).join("\n\n").trim();
+}
+
+function buildAgentToolInstructionSection(tools) {
+    const body = buildAgentToolInstruction(tools);
+    return `${agentAutoInstructionSectionStart}\n${body}\n${agentAutoInstructionSectionEnd}`.trim();
+}
+
+function buildAgentToolInstruction(tools) {
+    const configuredTools = (Array.isArray(tools) ? tools : []).filter(tool => tool.toolType);
+    if (configuredTools.length === 0) {
+        return "当前未添加任何 Agent 工具。";
+    }
+
+    const lines = [
+        "以下为当前 Agent 节点声明的外部能力边界与回答约束：",
+        "- 只可基于已提供的消息以及下列能力边界组织回答。",
+        "- 如果问题超出这些边界，请直接说明当前节点未配置对应工具或执行能力。",
+        "- 不要虚构任何网页结果、接口返回、数据库记录或工具执行结果。",
+        ""
+    ];
+
+    configuredTools.forEach((tool, index) => {
+        const meta = agentToolCatalog.find(item => item.type === tool.toolType);
+        lines.push(`${index + 1}. ${meta?.label ?? tool.toolType}`);
+        if (tool.name) lines.push(`工具名称：${tool.name}`);
+        if (tool.purpose) lines.push(`适用场景：${tool.purpose}`);
+        if (tool.resource) lines.push(`资源范围：${tool.resource}`);
+        if (tool.guardrails) lines.push(`使用约束：${tool.guardrails}`);
+        const args = detectAgentToolArgumentNames(tool);
+        lines.push(`可提取参数：${args.length ? args.join(", ") : "无"}`);
+        lines.push("");
+    });
+
+    lines.push("当你无法确认事实时，应明确说明缺少实际工具执行结果。");
+    return lines.join("\n").trim();
+}
+
+function detectAgentToolArgumentNames(tool) {
+    const values = [
+        tool.resource,
+        tool.currentTime?.timeZone,
+        tool.currentTime?.format,
+        tool.http?.url,
+        tool.http?.body,
+        tool.http?.queryParametersJson,
+        tool.http?.headersJson,
+        tool.webCrawler?.url,
+        tool.webCrawler?.userAgent,
+        tool.database?.host,
+        tool.database?.database,
+        tool.database?.username,
+        tool.database?.password,
+        tool.database?.sql,
+        tool.database?.parametersJson
+    ];
+    const names = new Set();
+    for (const value of values) {
+        const text = String(value || "");
+        for (const match of text.matchAll(/\{\{\s*([^}]+?)\s*\}\}/g)) {
+            let name = String(match[1] || "").trim();
+            if (name.startsWith("var.")) name = name.slice(4);
+            if (name.startsWith("input.")) continue;
+            if (name) names.add(name);
+        }
+    }
+    return Array.from(names.values()).sort((a, b) => a.localeCompare(b, "zh-CN"));
 }
 
 function renderManualFieldList() {
@@ -1316,6 +2335,55 @@ function renderHttpSettings(node) {
     httpRetryInput.value = settings.retryCount ?? 0;
     renderHttpQueryParameters(Array.isArray(settings.queryParameters) ? settings.queryParameters : []);
     renderHttpHeaders(Array.isArray(settings.headers) ? settings.headers : []);
+}
+
+function renderMailReadSettings(node) {
+    const settings = node.settings ?? {};
+    mailProtocolSelect.value = settings.protocol ?? "imap";
+    mailSecuritySelect.value = settings.security ?? "ssl";
+    mailHostInput.value = settings.host ?? "";
+    mailPortInput.value = settings.port ?? getMailDefaultPort(mailProtocolSelect.value, mailSecuritySelect.value);
+    mailUsernameInput.value = settings.username ?? "";
+    mailPasswordInput.value = settings.password ?? "";
+    mailFolderInput.value = settings.folder ?? "INBOX";
+    mailMaxMessagesInput.value = settings.maxMessages ?? 10;
+    mailTimeoutInput.value = settings.timeoutSeconds ?? 60;
+    mailMaxAttachmentBytesInput.value = settings.maxAttachmentBytes ?? 5242880;
+    mailUnreadOnlyInput.checked = settings.unreadOnly ?? false;
+    mailIgnoreKnownInput.checked = settings.ignoreKnownMessages ?? true;
+    mailMarkAsReadInput.checked = settings.markAsRead ?? false;
+    mailPopDeleteInput.checked = settings.popDeleteAfterRead ?? false;
+    mailIncludeAttachmentsInput.checked = settings.includeAttachments ?? true;
+    updateMailReadFieldsVisibility();
+}
+
+function updateMailReadFieldsVisibility() {
+    const isImap = mailProtocolSelect.value === "imap";
+    if (mailFolderField) {
+        mailFolderField.hidden = !isImap;
+    }
+    mailUnreadOnlyInput.closest("label").hidden = !isImap;
+    mailMarkAsReadInput.closest("label").hidden = !isImap;
+    if (mailPopDeleteField) {
+        mailPopDeleteField.hidden = isImap;
+    }
+    if (!isImap) {
+        mailUnreadOnlyInput.checked = false;
+        mailMarkAsReadInput.checked = false;
+    } else {
+        mailPopDeleteInput.checked = false;
+    }
+}
+
+function updateMailDefaultPort() {
+    mailPortInput.value = getMailDefaultPort(mailProtocolSelect.value, mailSecuritySelect.value);
+}
+
+function getMailDefaultPort(protocol, security) {
+    if (protocol === "pop3") {
+        return security === "ssl" ? 995 : 110;
+    }
+    return security === "ssl" ? 993 : 143;
 }
 
 function renderKnowledgeRetrievalSettings(node) {
@@ -1687,13 +2755,35 @@ function removeOutputTableColumn(index) {
 
 function collectWorkflowVariables(outputNodeId) {
     const variables = new Map();
-    const add = (name, source) => {
-        if (name && !variables.has(name)) variables.set(name, { name, source });
+    const add = (name, source, description = "") => {
+        if (name && !variables.has(name)) variables.set(name, { name, source, description });
     };
     const knownOutputs = {
         "trigger.manual": ["question", "files"],
         "trigger.schedule": ["scheduledAt", "triggerNodeId"],
+        "ai.agent": ["agentReply", "agentProvider", "agentModel", "agentExecutionMode", "agentTrace"],
         "ai.llm-chat": ["llmText", "llmProvider", "llmModel"],
+        "utility.current-time": [
+            "currentTime",
+            "currentTimeIso",
+            "currentTimeUtc",
+            "currentTimeZone",
+            "currentUnixTimeSeconds"
+        ],
+        "integration.mail-read": [
+            "mailProtocol",
+            "mailFolder",
+            "mailCount",
+            "mailFetchedCount",
+            "mailSkippedCount",
+            "mailItems",
+            "mailMessages",
+            "latestMailItem",
+            "latestMail",
+            "latestMailText",
+            "latestMailHtml",
+            "latestMailAttachments"
+        ],
         "ai.knowledge-retrieval": [
             "knowledgeQuery",
             "knowledgeHits",
@@ -1701,6 +2791,7 @@ function collectWorkflowVariables(outputNodeId) {
             "knowledgeHitCount"
         ],
         "ai.question-classifier": ["questionClassId", "questionClassName"],
+        "flow.for-each": ["forEachCount"],
         "integration.http-request": ["statusCode", "responseBody", "requestAttempts"],
         "integration.web-crawler": [
             "webUrl",
@@ -1718,27 +2809,57 @@ function collectWorkflowVariables(outputNodeId) {
 
     for (const node of state.workflow.nodes) {
         if (node.id === outputNodeId) continue;
-        for (const name of knownOutputs[node.type] ?? []) add(name, node.name);
+        for (const name of knownOutputs[node.type] ?? []) add(name, node.name, describeWorkflowVariable(name, node.type));
         if (node.type === "trigger.manual") {
             for (const field of normalizeManualInputFields(node.settings?.fields)) {
-                add(field.name, node.name);
+                add(field.name, node.name, field.description || `用户输入字段：${field.label || field.name}`);
             }
+        }
+        if (node.type === "flow.for-each") {
+            add(node.settings?.itemVariableName || "currentItem", node.name, "For Each 当前项变量");
+            add(node.settings?.indexVariableName || "currentIndex", node.name, "For Each 当前索引变量");
         }
         if (node.type === "data.template") {
             const outputVariable = node.settings?.variable ?? inferLegacyOutputVariable(node.settings ?? {});
-            add(outputVariable === "__custom__" ? "text" : outputVariable, node.name);
+            add(
+                outputVariable === "__custom__" ? "text" : outputVariable,
+                node.name,
+                outputVariable === "__custom__"
+                    ? describeWorkflowVariable("text", node.type)
+                    : `输出节点生成的变量：${outputVariable}`);
         }
 
         const settingsJson = JSON.stringify(node.settings ?? {});
         for (const match of settingsJson.matchAll(/\{\{\s*([^}]+?)\s*\}\}/g)) {
-            add(match[1], node.name);
+            add(match[1], node.name, describeWorkflowVariable(match[1], node.type));
         }
     }
 
-    add("var.workflowId", "系统");
-    add("var.executionId", "系统");
-    add("var.triggeredAt", "系统");
+    add("var.workflowId", "系统", describeWorkflowVariable("var.workflowId"));
+    add("var.executionId", "系统", describeWorkflowVariable("var.executionId"));
+    add("var.triggeredAt", "系统", describeWorkflowVariable("var.triggeredAt"));
     return Array.from(variables.values());
+}
+
+function describeWorkflowVariable(name, nodeType = "") {
+    const normalizedName = String(name || "").trim();
+    if (!normalizedName) {
+        return "";
+    }
+
+    if (variableDescriptions[normalizedName]) {
+        return variableDescriptions[normalizedName];
+    }
+
+    if (normalizedName.startsWith("var.")) {
+        return "系统级运行变量。";
+    }
+
+    if (nodeType === "trigger.manual") {
+        return "用户输入节点产生的表单变量。";
+    }
+
+    return "可在后续节点中引用的工作流变量。";
 }
 
 function inferLegacyOutputVariable(settings) {
@@ -1756,6 +2877,208 @@ function renderProviderConfigOptions(select, selectedId) {
         select.appendChild(option);
     }
     select.value = selectedId ?? "";
+}
+
+function renderAgentProviderConfigOptions(selectedId) {
+    const options = llmProviderPickerOptions();
+    agentProviderConfigSelect.innerHTML = options
+        .map(option => `<option value="${escapeAttribute(option.value)}">${escapeHtml(option.label)}</option>`)
+        .join("");
+    agentProviderConfigSelect.value = options.some(option => option.value === selectedId)
+        ? selectedId
+        : options[0]?.value ?? "";
+    renderAgentProviderPicker();
+}
+
+function renderClassifierProviderConfigOptions(selectedId) {
+    const options = llmProviderPickerOptions();
+    classifierProviderConfigSelect.innerHTML = options
+        .map(option => `<option value="${escapeAttribute(option.value)}">${escapeHtml(option.label)}</option>`)
+        .join("");
+    classifierProviderConfigSelect.value = options.some(option => option.value === selectedId)
+        ? selectedId
+        : options[0].value;
+    renderClassifierProviderPicker();
+}
+
+function renderClassifierProviderPicker() {
+    if (!classifierProviderConfigPicker) return;
+
+    const options = llmProviderPickerOptions();
+    const selected = options.find(option => option.value === classifierProviderConfigSelect.value) || options[0];
+    const query = state.classifierPickerSearch.trim().toLowerCase();
+    const filtered = query
+        ? options.filter(option =>
+            [option.modelName, option.providerName, option.label].join(" ").toLowerCase().includes(query))
+        : options;
+    const groups = new Map();
+    filtered.forEach(option => {
+        const groupName = option.providerName || "其他";
+        if (!groups.has(groupName)) groups.set(groupName, []);
+        groups.get(groupName).push(option);
+    });
+
+    classifierProviderConfigPicker.innerHTML = `
+        <button type="button" class="floating-model-trigger${state.classifierPickerOpen ? " is-open" : ""}" data-classifier-picker-trigger>
+            <span class="floating-model-selected">
+                ${providerLogoHtml(selected.providerId)}
+                <span class="floating-model-selected-copy">
+                    <strong>${escapeHtml(selected.modelName)}</strong>
+                </span>
+            </span>
+            <span class="floating-model-caret" aria-hidden="true"><img src="/assets/down.svg" alt=""></span>
+        </button>
+        <div class="floating-model-panel${state.classifierPickerOpen ? " is-open" : ""}">
+            <div class="floating-model-search-row">
+                <input type="search" class="floating-model-search" data-classifier-picker-search
+                       value="${escapeAttribute(state.classifierPickerSearch)}" placeholder="搜索模型">
+            </div>
+            <div class="floating-model-options">
+                ${groups.size ? Array.from(groups.entries()).map(([groupName, items]) => `
+                    <section class="floating-model-group">
+                        <header>${escapeHtml(groupName)}</header>
+                        ${items.map(item => `
+                            <button type="button"
+                                    class="floating-model-option${item.value === selected.value ? " is-selected" : ""}"
+                                    data-classifier-picker-option="${escapeAttribute(item.value)}">
+                                ${providerLogoHtml(item.providerId)}
+                                <span class="floating-model-option-copy">
+                                    <strong>${escapeHtml(item.modelName)}</strong>
+                                </span>
+                            </button>
+                        `).join("")}
+                    </section>
+                `).join("") : '<div class="floating-model-empty">没有找到匹配的模型</div>'}
+            </div>
+        </div>
+    `;
+
+    if (state.classifierPickerOpen) {
+        window.setTimeout(() => classifierProviderConfigPicker.querySelector("[data-classifier-picker-search]")?.focus(), 0);
+    }
+}
+
+function handleClassifierPickerClick(event) {
+    if (event.target.closest("[data-classifier-picker-trigger]")) {
+        event.stopPropagation();
+        state.classifierPickerOpen = !state.classifierPickerOpen;
+        if (state.classifierPickerOpen) state.classifierPickerSearch = "";
+        renderClassifierProviderPicker();
+        event.preventDefault();
+        return;
+    }
+
+    const option = event.target.closest("[data-classifier-picker-option]");
+    if (!option) return;
+    event.stopPropagation();
+    classifierProviderConfigSelect.value = option.dataset.classifierPickerOption;
+    state.classifierPickerOpen = false;
+    state.classifierPickerSearch = "";
+    renderClassifierProviderPicker();
+    event.preventDefault();
+}
+
+function handleClassifierPickerSearch(event) {
+    if (!event.target.matches("[data-classifier-picker-search]")) return;
+    state.classifierPickerSearch = event.target.value;
+    renderClassifierProviderPicker();
+}
+
+function closeClassifierPickerFromOutside(event) {
+    if (!state.classifierPickerOpen || event.target.closest("#classifierProviderConfigPicker")) return;
+    state.classifierPickerOpen = false;
+    state.classifierPickerSearch = "";
+    renderClassifierProviderPicker();
+}
+
+function renderAgentProviderPicker() {
+    if (!agentProviderConfigPicker) return;
+
+    const options = llmProviderPickerOptions();
+    const selected = options.find(option => option.value === agentProviderConfigSelect.value) || options[0];
+    const query = state.agentPickerSearch.trim().toLowerCase();
+    const filtered = query
+        ? options.filter(option =>
+            [option.modelName, option.providerName, option.label].join(" ").toLowerCase().includes(query))
+        : options;
+    const groups = new Map();
+    filtered.forEach(option => {
+        const groupName = option.providerName || "其他";
+        if (!groups.has(groupName)) groups.set(groupName, []);
+        groups.get(groupName).push(option);
+    });
+
+    agentProviderConfigPicker.innerHTML = `
+        <button type="button" class="floating-model-trigger${state.agentPickerOpen ? " is-open" : ""}" data-agent-picker-trigger>
+            <span class="floating-model-selected">
+                ${providerLogoHtml(selected?.providerId)}
+                <span class="floating-model-selected-copy">
+                    <strong>${escapeHtml(selected?.modelName ?? "请选择模型")}</strong>
+                </span>
+            </span>
+            <span class="floating-model-caret" aria-hidden="true"><img src="/assets/down.svg" alt=""></span>
+        </button>
+        <div class="floating-model-panel${state.agentPickerOpen ? " is-open" : ""}">
+            <div class="floating-model-search-row">
+                <input type="search" class="floating-model-search" data-agent-picker-search
+                       value="${escapeAttribute(state.agentPickerSearch)}" placeholder="搜索模型">
+            </div>
+            <div class="floating-model-options">
+                ${groups.size ? Array.from(groups.entries()).map(([groupName, items]) => `
+                    <section class="floating-model-group">
+                        <header>${escapeHtml(groupName)}</header>
+                        ${items.map(item => `
+                            <button type="button"
+                                    class="floating-model-option${item.value === selected?.value ? " is-selected" : ""}"
+                                    data-agent-picker-option="${escapeAttribute(item.value)}">
+                                ${providerLogoHtml(item.providerId)}
+                                <span class="floating-model-option-copy">
+                                    <strong>${escapeHtml(item.modelName)}</strong>
+                                </span>
+                            </button>
+                        `).join("")}
+                    </section>
+                `).join("") : '<div class="floating-model-empty">没有找到匹配的模型</div>'}
+            </div>
+        </div>
+    `;
+
+    if (state.agentPickerOpen) {
+        window.setTimeout(() => agentProviderConfigPicker.querySelector("[data-agent-picker-search]")?.focus(), 0);
+    }
+}
+
+function handleAgentPickerClick(event) {
+    if (event.target.closest("[data-agent-picker-trigger]")) {
+        event.stopPropagation();
+        state.agentPickerOpen = !state.agentPickerOpen;
+        if (state.agentPickerOpen) state.agentPickerSearch = "";
+        renderAgentProviderPicker();
+        event.preventDefault();
+        return;
+    }
+
+    const option = event.target.closest("[data-agent-picker-option]");
+    if (!option) return;
+    event.stopPropagation();
+    agentProviderConfigSelect.value = option.dataset.agentPickerOption;
+    state.agentPickerOpen = false;
+    state.agentPickerSearch = "";
+    renderAgentProviderPicker();
+    event.preventDefault();
+}
+
+function handleAgentPickerSearch(event) {
+    if (!event.target.matches("[data-agent-picker-search]")) return;
+    state.agentPickerSearch = event.target.value;
+    renderAgentProviderPicker();
+}
+
+function closeAgentPickerFromOutside(event) {
+    if (!state.agentPickerOpen || event.target.closest("#agentProviderConfigPicker")) return;
+    state.agentPickerOpen = false;
+    state.agentPickerSearch = "";
+    renderAgentProviderPicker();
 }
 
 function llmProviderPickerOptions() {
@@ -1889,10 +3212,14 @@ function providerLogoHtml(providerId) {
     const fallback = {
         system: "系",
         deepseek: "D",
+        gemini: "G",
+        hunyuan: "混",
         ollama: "O",
         openai: "O",
         qwen: "Q",
         doubao: "豆",
+        vllm: "V",
+        zhipu: "Z",
         volcengine: "豆"
     };
     return `<span class="floating-model-logo">${escapeHtml(fallback[providerId] || "?")}</span>`;
@@ -1902,10 +3229,14 @@ function providerLogoSrc(providerId) {
     const logos = {
         system: "/assets/setting.svg",
         deepseek: "/assets/deepseek.svg",
+        gemini: "/assets/gemini.svg",
+        hunyuan: "/assets/tencent.png",
         ollama: "/assets/Ollama.svg",
         openai: "/assets/OpenAI.svg",
         qwen: "/assets/tongyi.svg",
         doubao: "/assets/Volcengine.svg",
+        vllm: "/assets/vLLM.svg",
+        zhipu: "/assets/ZHIPU.svg",
         volcengine: "/assets/Volcengine.svg"
     };
     return logos[String(providerId || "").toLowerCase()] || "";
@@ -1927,7 +3258,7 @@ function renderLlmSettings(node) {
 
 function renderClassifierSettings(node) {
     const settings = node.settings ?? {};
-    renderProviderConfigOptions(classifierProviderConfigSelect, settings.providerConfigId);
+    renderClassifierProviderConfigOptions(settings.providerConfigId);
     classifierInput.value = settings.input ?? "{{question}}";
     classifierInstruction.value = settings.instruction ?? "";
     classifierClassList.innerHTML = "";
@@ -2063,7 +3394,6 @@ function dropNewNode(event) {
 }
 
 function addNodeToCanvas(type, point) {
-    if (!persistCurrentSelectionBeforeChange()) return;
     const descriptor = state.nodeTypes.find(item => item.type === type);
     const node = {
         id: createNodeId(type),
@@ -2074,7 +3404,8 @@ function addNodeToCanvas(type, point) {
     };
 
     state.workflow.nodes.push(node);
-    selectNode(node.id);
+    state.selected = { kind: "node", id: node.id };
+    renderAll();
     setStatus(`已添加节点：${node.name}`);
 }
 
@@ -2108,6 +3439,17 @@ function renderNodeIcon(type) {
 }
 
 function createDefaultSettings(type) {
+    if (type === "ai.agent") {
+        return {
+            providerConfigId: state.providerConfigs.find(config => config.enabled)?.id ?? "",
+            message: "{{question}}",
+            instruction: "",
+            maxIterations: 5,
+            tools: [],
+            timeoutSeconds: 180
+        };
+    }
+
     if (type === "ai.llm-chat") {
         return {
             providerConfigId: "doubao-default",
@@ -2133,6 +3475,14 @@ function createDefaultSettings(type) {
         };
     }
 
+    if (type === "flow.for-each") {
+        return {
+            itemsVariable: "",
+            itemVariableName: "currentItem",
+            indexVariableName: "currentIndex"
+        };
+    }
+
     if (type === "data.template") {
         return { variable: "", outputFormat: "json", tableColumns: [] };
     }
@@ -2146,6 +3496,26 @@ function createDefaultSettings(type) {
             body: "",
             timeoutSeconds: 30,
             retryCount: 0
+        };
+    }
+
+    if (type === "integration.mail-read") {
+        return {
+            protocol: "imap",
+            host: "",
+            port: 993,
+            security: "ssl",
+            username: "",
+            password: "",
+            folder: "INBOX",
+            unreadOnly: false,
+            ignoreKnownMessages: true,
+            markAsRead: false,
+            popDeleteAfterRead: false,
+            maxMessages: 10,
+            includeAttachments: true,
+            maxAttachmentBytes: 5242880,
+            timeoutSeconds: 60
         };
     }
 
@@ -2202,6 +3572,14 @@ function createDefaultSettings(type) {
             intervalSeconds: 60,
             cronExpression: "0 9 * * 1-5",
             timeZone: "Asia/Shanghai"
+        };
+    }
+
+    if (type === "utility.current-time") {
+        return {
+            mode: "local",
+            timeZone: "",
+            format: "yyyy-MM-dd HH:mm:ss zzz"
         };
     }
 
@@ -2328,16 +3706,22 @@ function applySelectedNodeSettings() {
     const node = state.selected?.kind === "node" ? findNode(state.selected.id) : null;
     if (!node) return;
 
-    if (node.type === "ai.llm-chat") {
+    if (node.type === "ai.agent") {
+        applyAgentSettings(node);
+    } else if (node.type === "ai.llm-chat") {
         applyLlmSettings(node);
     } else if (node.type === "ai.knowledge-retrieval") {
         applyKnowledgeRetrievalSettings(node);
     } else if (node.type === "ai.question-classifier") {
         applyClassifierSettings(node);
+    } else if (node.type === "flow.for-each") {
+        applyForEachSettings(node);
     } else if (node.type === "data.template") {
         applyOutputSettings(node);
     } else if (node.type === "integration.http-request") {
         applyHttpSettings(node);
+    } else if (node.type === "integration.mail-read") {
+        applyMailReadSettings(node);
     } else if (node.type === "integration.web-crawler") {
         applyWebCrawlerSettings(node);
     } else if (node.type === "integration.wecom-message") {
@@ -2346,6 +3730,8 @@ function applySelectedNodeSettings() {
         applyDatabaseSettings(node);
     } else if (node.type === "trigger.schedule") {
         applyScheduleSettings(node);
+    } else if (node.type === "utility.current-time") {
+        applyCurrentTimeSettings(node);
     } else if (node.type === "trigger.manual") {
         applyManualSettings(node);
     } else {
@@ -2372,6 +3758,37 @@ function applyScheduleSettings(node) {
         intervalSeconds: Math.min(86400, Math.max(1, Number.parseInt(scheduleIntervalInput.value, 10) || 60)),
         cronExpression: cronExpression || "0 9 * * 1-5",
         timeZone: scheduleTimeZoneSelect.value
+    };
+}
+
+function applyCurrentTimeSettings(node) {
+    const mode = currentTimeModeSelect.value || "local";
+    const timeZone = currentTimeTimeZoneInput.value.trim();
+    const format = currentTimeFormatInput.value.trim();
+    if (mode === "custom" && !timeZone) {
+        throw new Error("指定时区时，时区 ID 不能为空");
+    }
+    if (!format) {
+        throw new Error("输出格式不能为空");
+    }
+
+    node.settings = {
+        mode,
+        timeZone,
+        format
+    };
+}
+
+function applyForEachSettings(node) {
+    const itemsVariable = forEachItemsVariableInput.value.trim();
+    if (!itemsVariable) {
+        throw new Error("数组变量不能为空");
+    }
+
+    node.settings = {
+        itemsVariable,
+        itemVariableName: forEachItemVariableInput.value.trim() || "currentItem",
+        indexVariableName: forEachIndexVariableInput.value.trim() || "currentIndex"
     };
 }
 
@@ -2426,6 +3843,50 @@ function applyHttpSettings(node) {
         body: httpBodyInput.value,
         timeoutSeconds,
         retryCount
+    };
+}
+
+function applyMailReadSettings(node) {
+    const host = mailHostInput.value.trim();
+    const username = mailUsernameInput.value.trim();
+    if (!host) throw new Error("邮件服务器地址不能为空");
+    if (!username) throw new Error("邮箱账号不能为空");
+
+    node.settings = {
+        protocol: mailProtocolSelect.value,
+        host,
+        port: Math.min(65535, Math.max(1, Number.parseInt(mailPortInput.value, 10) || getMailDefaultPort(mailProtocolSelect.value, mailSecuritySelect.value))),
+        security: mailSecuritySelect.value,
+        username,
+        password: mailPasswordInput.value,
+        folder: mailFolderInput.value.trim() || "INBOX",
+        unreadOnly: mailProtocolSelect.value === "imap" && mailUnreadOnlyInput.checked,
+        ignoreKnownMessages: mailIgnoreKnownInput.checked,
+        markAsRead: mailProtocolSelect.value === "imap" && mailMarkAsReadInput.checked,
+        popDeleteAfterRead: mailProtocolSelect.value === "pop3" && mailPopDeleteInput.checked,
+        maxMessages: Math.min(100, Math.max(1, Number.parseInt(mailMaxMessagesInput.value, 10) || 10)),
+        includeAttachments: mailIncludeAttachmentsInput.checked,
+        maxAttachmentBytes: Math.min(26214400, Math.max(1024, Number.parseInt(mailMaxAttachmentBytesInput.value, 10) || 5242880)),
+        timeoutSeconds: Math.min(300, Math.max(5, Number.parseInt(mailTimeoutInput.value, 10) || 60))
+    };
+}
+
+function applyAgentSettings(node) {
+    if (!supportsAgentSettingsUi()) {
+        node.settings = JSON.parse(nodeSettingsInput.value || "{}");
+        return;
+    }
+
+    const providerConfigId = agentProviderConfigSelect.value;
+    const message = agentMessageInput.value.trim() || "{{question}}";
+
+    node.settings = {
+        providerConfigId,
+        message,
+        instruction: agentInstructionInput.value.trim(),
+        maxIterations: Math.min(12, Math.max(1, Number.parseInt(agentMaxIterationsInput.value, 10) || 5)),
+        tools: collectAgentTools(),
+        timeoutSeconds: Math.min(600, Math.max(1, Number.parseInt(agentTimeoutInput.value, 10) || 180))
     };
 }
 
@@ -2547,9 +4008,13 @@ function applySelectedEdgeSettings() {
     if (!edge) return;
 
     const sourceNode = findNode(edge.sourceNodeId);
-    if (sourceNode?.type !== "ai.question-classifier") {
-        edge.sourcePort = edgePortInput.value.trim() || "main";
-    }
+    edge.sourcePort = sourceNode?.type === "ai.question-classifier"
+        ? normalizeEdgeSourcePort(edgePortInput.dataset.sourcePortValue)
+        : normalizeEdgeSourcePort(edgePortInput.value);
+}
+
+function normalizeEdgeSourcePort(value) {
+    return String(value || "").trim() || "main";
 }
 
 function deleteSelected() {
@@ -2636,7 +4101,13 @@ function formatRelativeTime(value) {
 function openSystemVariablesDialog() {
     const variables = collectWorkflowVariables(null);
     systemVariablesList.innerHTML = variables.length
-        ? variables.map(variable => `<div class="system-variable-item"><code>{{${escapeHtml(variable.name)}}}</code><span>${escapeHtml(variable.source || "系统")}</span></div>`).join("")
+        ? variables.map(variable => `
+            <div class="system-variable-item">
+                <code>{{${escapeHtml(variable.name)}}}</code>
+                <p>${escapeHtml(variable.description || "可在后续节点中引用的工作流变量。")}</p>
+                <span>${escapeHtml(variable.source || "系统")}</span>
+            </div>
+        `).join("")
         : '<div class="empty-state">暂无可用变量</div>';
     systemVariablesDialog.showModal();
 }
@@ -2800,6 +4271,12 @@ function formatBytes(bytes) {
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+}
+
+function clampInteger(value, fallback, minimum, maximum) {
+    const parsed = Number.parseInt(String(value ?? ""), 10);
+    const normalized = Number.isFinite(parsed) ? parsed : fallback;
+    return Math.min(maximum, Math.max(minimum, normalized));
 }
 
 function setStatus(message) {

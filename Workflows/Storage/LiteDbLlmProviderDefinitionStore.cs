@@ -12,6 +12,38 @@ public sealed class LiteDbLlmProviderDefinitionStore : ILlmProviderDefinitionSto
         _providers = context.Database.GetCollection<LlmProviderDefinition>("llm_providers");
         _providers.EnsureIndex(provider => provider.Id, unique: true);
         SeedDefaults();
+        InsertDefault(new LlmProviderDefinition
+        {
+            Id = "hunyuan",
+            Name = "腾讯混元",
+            Description = "腾讯混元提供的 OpenAI 兼容模型服务。",
+            ApiAddress = "https://api.hunyuan.cloud.tencent.com/v1",
+            Enabled = true
+        });
+        InsertDefault(new LlmProviderDefinition
+        {
+            Id = "zhipu",
+            Name = "ZHIPU AI",
+            Description = "智谱 AI 提供的 OpenAI 兼容模型服务。",
+            ApiAddress = "https://open.bigmodel.cn/api/paas/v4",
+            Enabled = true
+        });
+        InsertDefault(new LlmProviderDefinition
+        {
+            Id = "gemini",
+            Name = "Gemini",
+            Description = "Google Gemini 提供的 OpenAI 兼容接口。",
+            ApiAddress = "https://generativelanguage.googleapis.com/v1beta/openai",
+            Enabled = true
+        });
+        InsertDefault(new LlmProviderDefinition
+        {
+            Id = "vllm",
+            Name = "vLLM",
+            Description = "连接本机或局域网中的 OpenAI 兼容 vLLM 服务。",
+            ApiAddress = "http://localhost:8000/v1",
+            Enabled = true
+        });
     }
 
     public Task<IReadOnlyCollection<LlmProviderDefinition>> ListAsync(CancellationToken cancellationToken)

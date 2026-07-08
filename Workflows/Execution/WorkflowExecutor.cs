@@ -158,13 +158,26 @@ public sealed class WorkflowExecutor : IWorkflowExecutor
 
                     await emitAsync(CreateNodeEvent("node.completed", workflow.Id, execution.Id, nodeDefinition, nodeRecord));
 
-                    var nextEdges = workflow.Edges
-                        .Where(edge => edge.SourceNodeId == nodeId && edge.SourcePort == result.OutputPort)
-                        .ToList();
+                    var dispatches = result.Dispatches?.Count > 0
+                        ? result.Dispatches
+                        : [new NodeExecutionDispatch
+                        {
+                            OutputPort = result.OutputPort,
+                            Data = result.Data
+                        }];
 
-                    foreach (var edge in nextEdges)
+                    foreach (var dispatch in dispatches)
                     {
-                        pending.Enqueue((edge.TargetNodeId, result.Data));
+                        var nextEdges = workflow.Edges
+                            .Where(edge =>
+                                edge.SourceNodeId == nodeId
+                                && NormalizePort(edge.SourcePort) == NormalizePort(dispatch.OutputPort))
+                            .ToList();
+
+                        foreach (var edge in nextEdges)
+                        {
+                            pending.Enqueue((edge.TargetNodeId, dispatch.Data));
+                        }
                     }
                 }
                 catch (LlmRequestTimeoutException ex)
@@ -282,4 +295,7 @@ public sealed class WorkflowExecutor : IWorkflowExecutor
 
     private static Dictionary<string, object?> Snapshot(IReadOnlyDictionary<string, object?> values)
         => values.ToDictionary(item => item.Key, item => item.Value);
+
+    private static string NormalizePort(string? value)
+        => string.IsNullOrWhiteSpace(value) ? "main" : value.Trim();
 }

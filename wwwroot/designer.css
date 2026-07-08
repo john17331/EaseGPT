@@ -146,9 +146,7 @@ body.resizing-panels {
 
 .system-variable-item {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 10px;
-    align-items: center;
+    gap: 6px;
     border: 1px solid var(--border);
     border-radius: 10px;
     padding: 9px 11px;
@@ -161,6 +159,13 @@ body.resizing-panels {
     white-space: nowrap;
     color: var(--accent-dark);
     font-size: 12px;
+}
+
+.system-variable-item p {
+    margin: 0;
+    color: var(--text);
+    font-size: 12px;
+    line-height: 1.45;
 }
 
 .system-variable-item span {
@@ -1329,6 +1334,7 @@ textarea {
 }
 
 #llmSettingsPanel textarea,
+#agentSettingsPanel textarea,
 #classifierSettingsPanel textarea,
 #knowledgeRetrievalSettingsPanel textarea,
 #outputSettingsPanel textarea,
@@ -1337,7 +1343,7 @@ textarea {
 #wecomSettingsPanel textarea,
 #databaseSettingsPanel textarea,
 #scheduleSettingsPanel textarea {
-    min-height: 110px;
+    min-height: 148px;
     font-family: inherit;
     font-size: 14px;
 }
@@ -1499,6 +1505,193 @@ textarea {
     color: var(--muted);
     font-size: 12px;
     text-align: center;
+}
+
+.agent-tool-heading {
+    margin: 14px 0 10px;
+}
+
+.agent-tool-heading strong {
+    font-size: 14px;
+    color: #111827;
+}
+
+.agent-tool-picker-anchor {
+    position: relative;
+}
+
+.agent-tool-list {
+    display: grid;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.agent-tool-limits-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.agent-tool-limits-row label {
+    margin: 0;
+}
+
+.agent-selection-empty {
+    padding: 12px;
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+    color: var(--muted);
+    font-size: 13px;
+    background: #fbfcfe;
+}
+
+.agent-tool-card {
+    display: grid;
+    gap: 10px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: #fcfdff;
+}
+
+.agent-tool-card-main {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.agent-tool-card-icon,
+.agent-tool-picker-icon {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    flex: 0 0 30px;
+    border-radius: 7px;
+    background: #e6f7ff;
+    color: var(--accent-dark);
+}
+
+.agent-tool-card-icon svg,
+.agent-tool-picker-icon svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.agent-tool-card-icon img,
+.agent-tool-picker-icon img {
+    display: block;
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+}
+
+.agent-tool-card-header {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.agent-tool-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex: 0 0 auto;
+}
+
+.agent-tool-card-copy {
+    min-width: 0;
+    display: grid;
+    gap: 4px;
+}
+
+.agent-tool-card-copy strong {
+    font-size: 13px;
+    color: #111827;
+}
+
+.agent-tool-card-copy small {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.agent-tool-card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.agent-tool-card-tags span {
+    padding: 4px 10px;
+    border: 1px solid #dbe6f5;
+    border-radius: 999px;
+    background: #fff;
+    color: #475467;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.agent-tool-picker {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 2000;
+    display: grid;
+    width: 420px;
+    gap: 10px;
+    padding: 12px;
+    border: 1px solid #dce5f2;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 18px 44px rgba(15, 23, 42, .14);
+}
+
+.agent-tool-picker-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #e6edf7;
+    border-radius: 12px;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    color: #1f2937;
+    text-align: left;
+}
+
+.agent-tool-picker-option:hover {
+    border-color: #bcd3ff;
+    box-shadow: 0 0 0 3px rgba(22, 119, 255, .08);
+}
+
+.agent-tool-picker-copy {
+    display: grid;
+    gap: 4px;
+}
+
+.agent-tool-picker-copy strong {
+    font-size: 14px;
+}
+
+.agent-tool-picker-copy small {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.agent-tool-config-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
 }
 
 .database-connection-grid {
@@ -1962,6 +2155,83 @@ textarea {
     color: #1f2937;
 }
 
+.agent-tool-dialog {
+    width: min(1080px, calc(100vw - 40px));
+    border: 1px solid rgba(226, 232, 240, .95);
+    border-radius: 16px;
+    padding: 0;
+    overflow: hidden;
+    box-shadow: 0 26px 90px rgba(15, 23, 42, .24);
+}
+
+.agent-tool-dialog::backdrop {
+    background: rgba(15, 23, 42, .35);
+}
+
+.agent-tool-dialog form {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    height: min(760px, calc(100vh - 44px));
+    background: #fff;
+}
+
+.agent-tool-dialog .dialog-header {
+    min-height: 68px;
+    margin: 0;
+    padding: 0 28px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, #fff 0%, #fbfdff 100%);
+}
+
+.agent-tool-dialog-body {
+    display: grid;
+    grid-template-columns: minmax(320px, .92fr) minmax(440px, 1.08fr);
+    min-height: 0;
+}
+
+.agent-tool-dialog-main,
+.agent-tool-dialog-side {
+    min-height: 0;
+    overflow: auto;
+    padding: 28px;
+}
+
+.agent-tool-dialog-main {
+    border-right: 1px solid var(--border);
+}
+
+.agent-tool-dialog-main label,
+.agent-tool-dialog-side label {
+    margin-bottom: 16px;
+}
+
+.agent-tool-dialog textarea {
+    min-height: 148px;
+    font-family: inherit;
+    font-size: 14px;
+}
+
+.agent-tool-type-fields {
+    display: grid;
+}
+
+.agent-tool-dialog .dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 28px;
+    border-top: 1px solid var(--border);
+    background: #fff;
+}
+
+.agent-tool-dialog .dialog-actions .primary-button,
+.agent-tool-dialog .dialog-actions .secondary-button {
+    width: auto;
+    min-width: 84px;
+    min-height: 36px;
+    padding: 0 18px;
+}
+
 @media (max-width: 780px) {
     .manual-field-dialog-body {
         grid-template-columns: 1fr;
@@ -1974,6 +2244,19 @@ textarea {
 
     .manual-field-type-list {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .agent-tool-dialog-body {
+        grid-template-columns: 1fr;
+    }
+
+    .agent-tool-dialog-main {
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .agent-tool-limits-row {
+        grid-template-columns: 1fr;
     }
 }
 
